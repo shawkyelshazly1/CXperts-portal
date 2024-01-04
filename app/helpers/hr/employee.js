@@ -7,7 +7,7 @@ export const searchEmployees = async (searchParams) => {
 		let employees = await prisma.employee.findMany({
 			where: {
 				OR: [
-					{ id: { equals: parseInt(searchParams.search) || 0 } },
+					{ employeeId: { equals: searchParams.search || "" } },
 					{ firstName: { contains: searchParams.search?.split(" ")[0] } },
 					{
 						lastName: {

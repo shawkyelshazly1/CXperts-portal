@@ -17,7 +17,7 @@ export const loginUser = async (username, password) => {
 
 		// return employee details
 		let employee = await prisma.employee.findUnique({
-			where: { id: loginDetails.employeeId },
+			where: { employeeId: loginDetails.employeeId },
 			include: {
 				manager: true,
 				department: true,

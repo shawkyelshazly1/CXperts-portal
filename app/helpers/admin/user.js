@@ -11,7 +11,7 @@ export const loadUsers = async (skip, take) => {
 	try {
 		let users = await prisma.employee.findMany({
 			select: {
-				id: true,
+				employeeId: true,
 				firstName: true,
 				lastName: true,
 				email: true,
@@ -58,9 +58,9 @@ export const getUsersCount = async () => {
 export const loadUser = async (userId) => {
 	try {
 		let user = await prisma.employee.findUnique({
-			where: { id: userId },
+			where: { employeeId: userId },
 			select: {
-				id: true,
+				employeeId: true,
 				firstName: true,
 				lastName: true,
 				email: true,
@@ -135,7 +135,7 @@ export const loadDepartmentPeople = async (departmentId, positionId) => {
 			select: {
 				firstName: true,
 				lastName: true,
-				id: true,
+				employeeId: true,
 				position: {
 					select: {
 						level: true,
@@ -206,7 +206,7 @@ export const createUser = async (userDetails) => {
 					: userDetails.birthDate,
 			},
 			select: {
-				id: true,
+				employeeId: true,
 				firstName: true,
 				lastName: true,
 				email: true,
@@ -218,7 +218,7 @@ export const createUser = async (userDetails) => {
 				},
 				manager: {
 					select: {
-						id: true,
+						employeeId: true,
 						firstName: true,
 						lastName: true,
 					},
@@ -229,7 +229,7 @@ export const createUser = async (userDetails) => {
 		// create employee documents
 		let employeeDocuments = await prisma.employeeDocuments.create({
 			data: {
-				employeeId: newEmployee.id,
+				employeeId: newEmployee.employeeId,
 			},
 		});
 
@@ -239,7 +239,7 @@ export const createUser = async (userDetails) => {
 		// 	newEmployee.lastName,
 		// ]);
 		// create employee loginDetails
-		let username = userDetails.email.split("@")[0]
+		let username = userDetails.email.split("@")[0];
 
 		let password = passwordGenerator.generate({
 			length: 10,
@@ -250,7 +250,7 @@ export const createUser = async (userDetails) => {
 			data: {
 				username: username,
 				password: await bcryptjs.hash(password, 10),
-				employeeId: newEmployee.id,
+				employeeId: newEmployee.employeeId,
 			},
 			select: {
 				username: true,
@@ -304,7 +304,7 @@ export const exportWFRToCsv = (data) => {
 	data = ensureArray(data);
 	data = data.map((request) => {
 		return {
-			id: request.id,
+			id: request.employeeId,
 			firstName: S(request.firstName).capitalize().value(),
 			lastName: S(request.lastName).capitalize().value(),
 			email: request.email,
@@ -316,7 +316,7 @@ export const exportWFRToCsv = (data) => {
 				.split("_")
 				.map((value) => S(value).capitalize().value())
 				.join(" "),
-			managerId: request.manager.id,
+			managerId: request.manager.employeeId,
 			manager: `${S(request.manager.firstName).capitalize().value()}  ${S(
 				request.manager.lastName
 			)
@@ -352,6 +352,7 @@ export const downloadBulkFormatSheet = () => {
 // validate bulk template columns
 export const validateBulkTemplate = (file) => {
 	const expectedColumns = [
+		"employeeId",
 		"email",
 		"firstName",
 		"lastName",
@@ -439,7 +440,7 @@ export const upsertBulkUsers = async (data) => {
 					// validate manager
 					let existingManager = await prisma.employee.findUnique({
 						where: {
-							id: employee.managerId,
+							employeeId: employee.managerId,
 						},
 						select: {
 							position: true,
@@ -520,7 +521,7 @@ export const upsertBulkUsers = async (data) => {
 export const resetUserPassword = async (employeeId, password) => {
 	try {
 		let user = await prisma.employee.findFirst({
-			where: { id: parseInt(employeeId) },
+			where: { employeeId: employeeId },
 		});
 
 		if (!user) {
@@ -528,7 +529,7 @@ export const resetUserPassword = async (employeeId, password) => {
 		}
 
 		let loginDetails = await prisma.loginDetails.update({
-			where: { employeeId: parseInt(employeeId) },
+			where: { employeeId: employeeId },
 			data: { password: await bcryptjs.hash(password, 10) },
 		});
 
@@ -544,7 +545,7 @@ export const resetUserPassword = async (employeeId, password) => {
 export const disableEmployee = async (employeeId) => {
 	try {
 		let user = await prisma.employee.update({
-			where: { id: parseInt(employeeId) },
+			where: { employeeId: employeeId },
 			data: { accountStatus: "disabled" },
 		});
 
@@ -564,7 +565,7 @@ export const disableEmployee = async (employeeId) => {
 export const activateEmployee = async (employeeId) => {
 	try {
 		let user = await prisma.employee.update({
-			where: { id: parseInt(employeeId) },
+			where: { employeeId: employeeId },
 			data: { accountStatus: "active" },
 		});
 

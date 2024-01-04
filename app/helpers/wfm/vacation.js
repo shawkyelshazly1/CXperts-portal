@@ -65,7 +65,7 @@ export const loadProjectVacationRequests = async (skip, take, projects) => {
 				createdAt: true,
 				employee: {
 					select: {
-						id: true,
+						employeeId: true,
 						firstName: true,
 						lastName: true,
 					},
@@ -113,7 +113,7 @@ export const updateRequestStatus = async (data, user) => {
 			select: {
 				employee: {
 					select: {
-						id: true,
+						employeeId: true,
 					},
 				},
 			},
@@ -125,7 +125,7 @@ export const updateRequestStatus = async (data, user) => {
 			},
 			data: {
 				approvalStatus: data.status,
-				approvedBy: user?.id,
+				approvedBy: user?.employeeId,
 			},
 		});
 
@@ -136,7 +136,7 @@ export const updateRequestStatus = async (data, user) => {
 		if (data.status === "approved") {
 			// update employee Balance
 			let result = await updateEmployeeVacationBalance(
-				request.employee.id,
+				request.employee.employeeId,
 				data.days
 			);
 
@@ -156,7 +156,7 @@ export const updateRequestStatus = async (data, user) => {
 // update employee Balance count by -1
 const updateEmployeeVacationBalance = async (employeeId, days) => {
 	let employee = await prisma.employee.findUnique({
-		where: { id: parseInt(employeeId) },
+		where: { employeeId: employeeId },
 		select: { vacationBalance: true },
 	});
 
@@ -167,7 +167,7 @@ const updateEmployeeVacationBalance = async (employeeId, days) => {
 	let updatedVacationBalance = employee.vacationBalance - days;
 
 	let updatedEmployee = await prisma.employee.update({
-		where: { id: parseInt(employeeId) },
+		where: { employeeId: employeeId },
 		data: {
 			vacationBalance: updatedVacationBalance,
 		},

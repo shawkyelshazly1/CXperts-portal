@@ -2,7 +2,6 @@ import prisma from "../../../prisma";
 import bcryptjs from "bcryptjs";
 
 export const resetUserPassword = async (data) => {
-	
 	try {
 		let existingUser = await prisma.loginDetails.findUnique({
 			where: {

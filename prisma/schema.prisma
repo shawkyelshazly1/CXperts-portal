@@ -27,8 +27,8 @@ model LoginDetails {
   id             Int      @id @default(autoincrement())
   username       String   @unique
   password       String
-  employee       Employee @relation(fields: [employeeId], references: [id])
-  employeeId     Int      @unique
+  employee       Employee @relation(fields: [employeeId], references: [employeeId])
+  employeeId     String   @unique
   reset_required Boolean  @default(true)
 }
 
@@ -36,6 +36,7 @@ model Employee {
   id               Int                @id @default(autoincrement())
   email            String             @unique
   firstName        String
+  employeeId       String             @unique
   middleName       String?
   lastName         String
   hiringDate       DateTime           @default(now())
@@ -50,8 +51,8 @@ model Employee {
   projectId        Int?
   positionId       Int
   position         Position           @relation(fields: [positionId], references: [id])
-  manager          Employee?          @relation("ManagerEmployees", fields: [managerId], references: [id])
-  managerId        Int?
+  manager          Employee?          @relation("ManagerEmployees", fields: [managerId], references: [employeeId])
+  managerId        String?
   subordinates     Employee[]         @relation("ManagerEmployees")
   vacationBalance  Int                @default(21)
   VacationRequest  VacationRequest[]
@@ -63,8 +64,8 @@ model Employee {
 
 model EmployeeDocuments {
   id                   Int      @id @default(autoincrement())
-  employee             Employee @relation(fields: [employeeId], references: [id])
-  employeeId           Int      @unique
+  employee             Employee @relation(fields: [employeeId], references: [employeeId])
+  employeeId           String   @unique
   medicalInsuranceCard String?
   criminalRecord       String?
   nationalIdCard       String?
@@ -92,10 +93,10 @@ model VacationRequest {
   reason            VacationReason
   createdAt         DateTime              @default(now())
   approvalStatus    VacationRequestStatus @default(pending)
-  employee          Employee              @relation(fields: [employeeId], references: [id])
-  employeeId        Int
-  approvedBy        Int?
-  approvedByManager Employee?             @relation("approvedByManager", fields: [approvedBy], references: [id])
+  employee          Employee              @relation(fields: [employeeId], references: [employeeId])
+  employeeId        String
+  approvedBy        String?
+  approvedByManager Employee?             @relation("approvedByManager", fields: [approvedBy], references: [employeeId])
 }
 
 enum VacationRequestStatus {

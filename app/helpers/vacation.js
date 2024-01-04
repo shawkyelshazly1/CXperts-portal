@@ -8,7 +8,7 @@ export const loadUserVacationBalance = async (userId, vacationBalance) => {
 	try {
 		let usedBalance = await prisma.vacationRequest.findMany({
 			where: {
-				employeeId: parseInt(userId),
+				employeeId: userId,
 				approvalStatus: "approved",
 				from: { gte: new Date(currentYear, 0, 1) },
 				to: { lte: new Date(currentYear, 11, 31) },
@@ -47,7 +47,7 @@ export const submitVacationRequest = async (vacationData, userId) => {
 
 		let employee = await prisma.employee.findUnique({
 			where: {
-				id: userId,
+				employeeId: userId,
 			},
 			select: {
 				vacationBalance: true,
@@ -62,7 +62,7 @@ export const submitVacationRequest = async (vacationData, userId) => {
 			let currentYear = new Date().getFullYear();
 			let usedBalance = await prisma.vacationRequest.findMany({
 				where: {
-					employeeId: parseInt(userId),
+					employeeId: userId,
 					approvalStatus: "approved",
 					from: { gte: new Date(currentYear, 0, 1) },
 					to: { lte: new Date(currentYear, 11, 31) },
@@ -83,8 +83,6 @@ export const submitVacationRequest = async (vacationData, userId) => {
 				result[reason] = (result[reason] || 0) + days;
 				return result;
 			}, {});
-
-			
 
 			if (
 				6 - parseInt(daysByReason["casual"]) < days ||
@@ -133,7 +131,7 @@ export const loadVacationRequests = async (userId, skip, take) => {
 				createdAt: true,
 				employee: {
 					select: {
-						id: true,
+						employeeId: true,
 						firstName: true,
 						lastName: true,
 					},
@@ -144,7 +142,7 @@ export const loadVacationRequests = async (userId, skip, take) => {
 				approvalStatus: true,
 				approvedByManager: {
 					select: {
-						id: true,
+						employeeId: true,
 						firstName: true,
 						lastName: true,
 					},
@@ -175,7 +173,7 @@ export const loadAllUserRequests = async (userId) => {
 				createdAt: true,
 				employee: {
 					select: {
-						id: true,
+						employeeId: true,
 						firstName: true,
 						lastName: true,
 					},
@@ -186,7 +184,7 @@ export const loadAllUserRequests = async (userId) => {
 				approvalStatus: true,
 				approvedByManager: {
 					select: {
-						id: true,
+						employeeId: true,
 						firstName: true,
 						lastName: true,
 					},
@@ -227,7 +225,7 @@ export const loadTeamRequestsCount = async (userId) => {
 				approvalStatus: "pending",
 				reason: "annual",
 				employee: {
-					managerId: parseInt(userId),
+					managerId: userId,
 				},
 			},
 		});
@@ -248,7 +246,7 @@ export const loadTeamVacationRequests = async (userId, skip, take) => {
 				approvalStatus: "pending",
 				reason: "annual",
 				employee: {
-					managerId: parseInt(userId),
+					managerId: userId,
 				},
 			},
 			select: {
@@ -256,7 +254,7 @@ export const loadTeamVacationRequests = async (userId, skip, take) => {
 				createdAt: true,
 				employee: {
 					select: {
-						id: true,
+						employeeId: true,
 						firstName: true,
 						lastName: true,
 					},
@@ -289,7 +287,7 @@ export const updateRequestStatus = async (data, managerId) => {
 				employee: {
 					select: {
 						managerId: true,
-						id: true,
+						employeeId: true,
 					},
 				},
 			},
@@ -316,7 +314,7 @@ export const updateRequestStatus = async (data, managerId) => {
 		if (data.status === "approved") {
 			// update employee Balance
 			let result = await updateEmployeeVacationBalance(
-				request.employee.id,
+				request.employee.employeeId,
 				data.days
 			);
 
@@ -336,7 +334,7 @@ export const updateRequestStatus = async (data, managerId) => {
 // update employee Balance count by -1
 const updateEmployeeVacationBalance = async (employeeId, days) => {
 	let employee = await prisma.employee.findUnique({
-		where: { id: parseInt(employeeId) },
+		where: { employeeId: employeeId },
 		select: { vacationBalance: true },
 	});
 
@@ -347,7 +345,7 @@ const updateEmployeeVacationBalance = async (employeeId, days) => {
 	let updatedVacationBalance = employee.vacationBalance - days;
 
 	let updatedEmployee = await prisma.employee.update({
-		where: { id: parseInt(employeeId) },
+		where: { employeeId: employeeId },
 		data: {
 			vacationBalance: updatedVacationBalance,
 		},
