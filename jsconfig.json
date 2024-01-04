@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/components/*": ["app/components/*"],
+      "@/prisma/*": ["prisma/*"],
+      "@/public/*":["public/*"],
+      "@/api/*":["app/api/*"],
+      "@/helpers/*":["app/helpers/*"],
+    }
+  }
+}
