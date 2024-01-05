@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = "postgresql://postgres:root@localhost:5432/CXperts_db?schema=public" // uses connection pooling
+  directUrl = "postgresql://postgres:root@localhost:5432/CXperts_db?schema=public" // uses a direct connection
+}
+
+model Department {
+  id               Int          @id @default(autoincrement())
+  name             String
+  description      String?
+  parentDept       Department?  @relation("SubDepartments", fields: [parentId], references: [id])
+  parentId         Int?
+  subDepartments   Department[] @relation("SubDepartments")
+  employees        Employee[]   @relation("DepartmentEmployees")
+  positions        Position[]   @relation("DepartmentPositions")
+  projectEmployees Employee[]   @relation("SubDepartmentEmployees")
+}
+
+model LoginDetails {
+  id             Int      @id @default(autoincrement())
+  username       String   @unique
+  password       String
+  employee       Employee @relation(fields: [employeeId], references: [employeeId])
+  employeeId     String   @unique
+  reset_required Boolean  @default(true)
+}
+
+model Employee {
+  id               Int                @id @default(autoincrement())
+  email            String             @unique
+  firstName        String
+  employeeId       String             @unique
+  middleName       String?
+  lastName         String
+  hiringDate       DateTime           @default(now())
+  nationalId       String?
+  nationality      String?
+  resignationDate  DateTime?
+  phoneNumber      String?
+  birthDate        DateTime?
+  department       Department         @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+  departmentId     Int
+  project          Department?        @relation("SubDepartmentEmployees", fields: [projectId], references: [id])
+  projectId        Int?
+  positionId       Int
+  position         Position           @relation(fields: [positionId], references: [id])
+  manager          Employee?          @relation("ManagerEmployees", fields: [managerId], references: [employeeId])
+  managerId        String?
+  subordinates     Employee[]         @relation("ManagerEmployees")
+  vacationBalance  Int                @default(21)
+  VacationRequest  VacationRequest[]
+  approvedRequests VacationRequest[]  @relation("approvedByManager")
+  LoginDetails     LoginDetails?
+  documents        EmployeeDocuments?
+  accountStatus    String             @default("active")
+}
+
+model EmployeeDocuments {
+  id                   Int      @id @default(autoincrement())
+  employee             Employee @relation(fields: [employeeId], references: [employeeId])
+  employeeId           String   @unique
+  medicalInsuranceCard String?
+  criminalRecord       String?
+  nationalIdCard       String?
+  birthCertificate     String?
+  educationDegree      String?
+  millitaryCertificate String?
+  insuranceProof       String?
+  workPermit           String?
+  personalPhoto        String?
+}
+
+model Position {
+  id           Int        @id @default(autoincrement())
+  title        String
+  department   Department @relation("DepartmentPositions", fields: [departmentId], references: [id])
+  departmentId Int
+  level        Int
+  employees    Employee[]
+}
+
+model VacationRequest {
+  id                Int                   @id @default(autoincrement())
+  from              DateTime
+  to                DateTime
+  reason            VacationReason
+  createdAt         DateTime              @default(now())
+  approvalStatus    VacationRequestStatus @default(pending)
+  employee          Employee              @relation(fields: [employeeId], references: [employeeId])
+  employeeId        String
+  approvedBy        String?
+  approvedByManager Employee?             @relation("approvedByManager", fields: [approvedBy], references: [employeeId])
+}
+
+enum VacationRequestStatus {
+  pending
+  approved
+  denied
+}
+
+enum VacationReason {
+  business_trip
+  annual
+  casual
+  sick
+}
