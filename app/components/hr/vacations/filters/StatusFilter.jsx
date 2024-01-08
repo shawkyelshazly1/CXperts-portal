@@ -24,7 +24,7 @@ const MenuProps = {
 	},
 };
 
-export default function ProjectsFilter({ projects }) {
+export default function StatusFilter() {
 	const [inputValue, setInputValue] = useState([]);
 	const [debouncedValue, setDebouncedValue] = useState([]);
 	const [mounted, setMounted] = useState(false);
@@ -37,9 +37,9 @@ export default function ProjectsFilter({ projects }) {
 		(debouncedValue) => {
 			let params = new URLSearchParams(window.location.search);
 			if (debouncedValue.length > 0) {
-				params.set("department", debouncedValue);
+				params.set("approvalStatus", debouncedValue);
 			} else {
-				params.delete("department");
+				params.delete("approvalStatus");
 			}
 
 			startTransition(() => {
@@ -52,7 +52,7 @@ export default function ProjectsFilter({ projects }) {
 	// EFFECT: Set Inital params
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
-		const searchQuery = params.get("department") ?? [];
+		const searchQuery = params.get("approvalStatus") ?? [];
 		if (typeof searchQuery === "string") setInputValue(searchQuery?.split(","));
 		else {
 			setInputValue([]);
@@ -92,19 +92,21 @@ export default function ProjectsFilter({ projects }) {
 	return (
 		<div className="flex flex-col gap-2 w-full">
 			<FormControl sx={{ m: 1, width: 300 }}>
-				<InputLabel id="department-multiple-checkbox-label">Project</InputLabel>
+				<InputLabel id="approvalStatus-multiple-checkbox-label">
+					Approval Status
+				</InputLabel>
 				<Select
-					labelId="department-multiple-checkbox-label"
-					id="department-multiple-checkbox"
+					labelId="approvalStatus-multiple-checkbox-label"
+					id="approvalStatus-multiple-checkbox"
 					multiple
-					name="department"
+					name="approvalStatus"
 					value={inputValue}
 					onChange={handleChange}
-					input={<OutlinedInput label="Project" />}
-					renderValue={(selected) =>
+					input={<OutlinedInput label="Approval Status" />}
+					renderValue={() =>
 						inputValue
-							.map((department) =>
-								department
+							.map((status) =>
+								status
 									.split("_")
 									.map((word) => S(word).capitalize().value())
 									.join(" ")
@@ -113,11 +115,11 @@ export default function ProjectsFilter({ projects }) {
 					}
 					MenuProps={MenuProps}
 				>
-					{projects?.map((department) => (
-						<MenuItem key={department.id} value={department.name}>
-							<Checkbox checked={inputValue.indexOf(department.name) > -1} />
+					{["pending", "denied", "approved"].map((status, idx) => (
+						<MenuItem key={idx} value={status}>
+							<Checkbox checked={inputValue.indexOf(status) > -1} />
 							<ListItemText
-								primary={department.name
+								primary={status
 									.split("_")
 									.map((word) => S(word).capitalize().value())
 									.join(" ")}

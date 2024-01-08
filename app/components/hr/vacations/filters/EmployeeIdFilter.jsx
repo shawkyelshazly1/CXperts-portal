@@ -1,13 +1,33 @@
 "use client";
 
-import { DatePicker } from "@mui/x-date-pickers";
-import moment from "moment";
+import {
+	Checkbox,
+	FormControl,
+	InputLabel,
+	ListItemText,
+	MenuItem,
+	OutlinedInput,
+	Select,
+	TextField,
+} from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
+import S from "underscore.string";
 
-export default function DatePickerTo() {
-	const [inputValue, setInputValue] = useState("");
-	const [debouncedValue, setDebouncedValue] = useState("");
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+	PaperProps: {
+		style: {
+			maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+			width: 250,
+		},
+	},
+};
+
+export default function EmployeeIdFilter() {
+	const [inputValue, setInputValue] = useState([]);
+	const [debouncedValue, setDebouncedValue] = useState([]);
 	const [mounted, setMounted] = useState(false);
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
@@ -18,9 +38,9 @@ export default function DatePickerTo() {
 		(debouncedValue) => {
 			let params = new URLSearchParams(window.location.search);
 			if (debouncedValue.length > 0) {
-				params.set("to", debouncedValue);
+				params.set("employeeId", debouncedValue);
 			} else {
-				params.delete("to");
+				params.delete("employeeId");
 			}
 
 			startTransition(() => {
@@ -30,16 +50,11 @@ export default function DatePickerTo() {
 		[pathname, router]
 	);
 
-	
-
 	// EFFECT: Set Inital params
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
-		const searchQuery = params.get("to") ?? "";
-		if (typeof searchQuery === "string") setInputValue(searchQuery?.split(","));
-		else {
-			setInputValue("");
-		}
+		const searchQuery = params.get("employeeId") ?? "";
+		setInputValue(searchQuery);
 	}, []);
 
 	// EFFECT: Set Mounted
@@ -65,14 +80,19 @@ export default function DatePickerTo() {
 		if (mounted) handleSearchParams(debouncedValue);
 	}, [debouncedValue, mounted, handleSearchParams]);
 
-	const handleChange = (value) => {
-		
-		setInputValue(value?.toISOString() || "");
-	};
-
 	return (
 		<div className="flex flex-col gap-2 w-full">
-			<DatePicker onChange={handleChange} value={moment(inputValue)} />
+			<FormControl sx={{ m: 1, width: 300 }}>
+				<TextField
+					id="employeeId"
+					type="text"
+					label="Employee ID"
+					variant="outlined"
+					name="employeeId"
+					onChange={(e) => setInputValue(e.target.value)}
+					value={inputValue}
+				/>
+			</FormControl>
 		</div>
 	);
 }

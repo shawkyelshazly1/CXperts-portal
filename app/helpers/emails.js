@@ -41,7 +41,7 @@ export async function sendWelcomeEmail(username, password, email) {
 	// Send email with defined transport object
 	try {
 		const info = await transporter.sendMail(mailOptions);
-		console.log("Message sent: %s", info.messageId);
+		
 		return { success: true, messageId: info.messageId };
 	} catch (error) {
 		console.error("Error sending email: ", error);
@@ -90,7 +90,6 @@ export async function sendVacationRequestSubmissionEmail(
 	// Send email with defined transport object
 	try {
 		const info = await transporter.sendMail(mailOptions);
-		console.log("Message sent: %s", info.messageId);
 		return { success: true, messageId: info.messageId };
 	} catch (error) {
 		console.error("Error sending email: ", error);
@@ -147,7 +146,6 @@ export async function sendVacationRequestManagerEmail(
 	// Send email with defined transport object
 	try {
 		const info = await transporter.sendMail(mailOptions);
-		console.log("Message sent: %s", info.messageId);
 		return { success: true, messageId: info.messageId };
 	} catch (error) {
 		console.error("Error sending email: ", error);
@@ -204,7 +202,6 @@ export async function sendVacationRequestFeedbackEmail(
 	// Send email with defined transport object
 	try {
 		const info = await transporter.sendMail(mailOptions);
-		console.log("Message sent: %s", info.messageId);
 		return { success: true, messageId: info.messageId };
 	} catch (error) {
 		console.error("Error sending email: ", error);

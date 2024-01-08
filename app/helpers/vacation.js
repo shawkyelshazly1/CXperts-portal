@@ -274,17 +274,34 @@ export const loadVacationRequestsCount = async (userId) => {
 // Load manager pending team requests
 export const loadTeamRequestsCount = async (userId) => {
 	try {
-		let teamVacationRequestsCount = await prisma.vacationRequest.count({
+		let teamVacationRequestsCount = await prisma.vacationRequest.findMany({
 			where: {
 				approvalStatus: "pending",
 				reason: { not: "sick" },
 				employee: {
 					managerId: userId,
+					position: {
+						title: { not: "representative" },
+					},
 				},
+			},
+			select: {
+				employee: {
+					select: {
+						position: {
+							select: {
+								title: true,
+							},
+						},
+						managerId: true,
+					},
+				},
+				approvalStatus: true,
+				reason: true,
 			},
 		});
 
-		return teamVacationRequestsCount;
+		return teamVacationRequestsCount.length;
 	} catch (error) {
 		console.error(error);
 	} finally {
@@ -301,6 +318,9 @@ export const loadTeamVacationRequests = async (userId, skip, take) => {
 				reason: { not: "sick" },
 				employee: {
 					managerId: userId,
+					position: {
+						title: { not: "representative" },
+					},
 				},
 			},
 			select: {
@@ -311,6 +331,11 @@ export const loadTeamVacationRequests = async (userId, skip, take) => {
 						employeeId: true,
 						firstName: true,
 						lastName: true,
+						position: {
+							select: {
+								title: true,
+							},
+						},
 					},
 				},
 				reason: true,

@@ -8,7 +8,10 @@ export async function GET(req) {
 		return new Response("Not Authorized", { status: 401 });
 	}
 
-	if (token.user?.department?.name !== "human_resources") {
+	if (
+		token.user?.department?.name !== "human_resources" &&
+		token.user?.department?.name !== "information_technology"
+	) {
 		return new Response("Not Authorized", { status: 401 });
 	}
 

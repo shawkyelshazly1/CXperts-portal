@@ -15,6 +15,8 @@ export default function EmployeesVacationRequestsTable() {
 	const [from, setFrom] = useState("");
 	const [to, setTo] = useState("");
 	const [positions, setPositions] = useState([]);
+	const [approvalStatuses, setApprovalStatuses] = useState([]);
+	const [employeeId, setEmployeeId] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [loadingApprovalAction, setLoadingApprovalAction] = useState(false);
 	const [requestsCount, setRequestsCount] = useState(0);
@@ -38,20 +40,35 @@ export default function EmployeesVacationRequestsTable() {
 			urlSearchParams.get("department")?.split(",") || [];
 
 		const paramsPositions = urlSearchParams.get("position")?.split(",") || [];
+		const paramsApprovalStatus =
+			urlSearchParams.get("approvalStatus")?.split(",") || [];
 		const paramsFrom = urlSearchParams.get("from") || "";
 		const paramsTo = urlSearchParams.get("to") || "";
+		const paramsEmployeeId = urlSearchParams.get("employeeId") || "";
 
 		if (!_.isEqual(departments, paramsDepartments)) {
 			setDepartments(urlSearchParams?.get("department")?.split(",") || []);
 		}
+		if (!_.isEqual(approvalStatuses, paramsApprovalStatus)) {
+			setApprovalStatuses(
+				urlSearchParams?.get("approvalStatus")?.split(",") || []
+			);
+		}
+
 		if (!_.isEqual(positions, paramsPositions)) {
 			setPositions(urlSearchParams?.get("position")?.split(",") || []);
 		}
+
 		if (!_.isEqual(from, paramsFrom)) {
 			setFrom(urlSearchParams?.get("from") || "");
 		}
+
 		if (!_.isEqual(to, paramsTo)) {
 			setTo(urlSearchParams?.get("to") || "");
+		}
+
+		if (!_.isEqual(employeeId, paramsEmployeeId)) {
+			setEmployeeId(urlSearchParams?.get("employeeId") || "");
 		}
 
 		// Now, we use the setDepartments state updater function
@@ -122,6 +139,28 @@ export default function EmployeesVacationRequestsTable() {
 			align: "center",
 			headerAlign: "center",
 		},
+		{
+			field: "approvalStatus",
+			headerName: "Status",
+			width: 150,
+			align: "center",
+			headerAlign: "center",
+			renderCell: (params) => {
+				return (
+					<span
+						className={`text-white text-center text-base py-1 px-3 rounded-full font-semibold capitalize w-24  ${
+							params.value === "pending"
+								? "bg-amber-500"
+								: params.value === "approved"
+								? "bg-green-500"
+								: "bg-red-500"
+						}`}
+					>
+						{params.value}
+					</span>
+				);
+			},
+		},
 	];
 
 	// load the requests count
@@ -130,7 +169,11 @@ export default function EmployeesVacationRequestsTable() {
 			await fetch(
 				`/api/hr/vacation/load/all/count?department=${departments.join(
 					","
-				)}&position=${positions.join(",")}&from=${from}&to=${to}}}`,
+				)}&position=${positions.join(
+					","
+				)}&from=${from}&to=${to}&employeeId=${employeeId}&approvalStatus=${approvalStatuses.join(
+					","
+				)}`,
 				{ method: "GET" }
 			)
 				.then(async (res) => {
@@ -149,7 +192,7 @@ export default function EmployeesVacationRequestsTable() {
 		return () => {
 			setRequestsCount(0);
 		};
-	}, [departments, positions, from, to]);
+	}, [departments, positions, from, to, employeeId, approvalStatuses]);
 
 	// load requests
 	useEffect(() => {
@@ -160,7 +203,11 @@ export default function EmployeesVacationRequestsTable() {
 					paginationModel.page * paginationModel.pageSize
 				}&take=${paginationModel.pageSize}&department=${departments.join(
 					","
-				)}&position=${positions.join(",")}&from=${from}&to=${to}}`,
+				)}&position=${positions.join(
+					","
+				)}&from=${from}&to=${to}&employeeId=${employeeId}&approvalStatus=${approvalStatuses.join(
+					","
+				)}`,
 				{ method: "GET" }
 			)
 				.then(async (res) => {
@@ -181,7 +228,15 @@ export default function EmployeesVacationRequestsTable() {
 		return () => {
 			setRequests([]);
 		};
-	}, [paginationModel.page, departments, positions, from, to]);
+	}, [
+		paginationModel.page,
+		departments,
+		positions,
+		from,
+		to,
+		employeeId,
+		approvalStatuses,
+	]);
 
 	return (
 		<div className="w-full lg:w-fit max-h-full min-h-[200px] self-center text-center">

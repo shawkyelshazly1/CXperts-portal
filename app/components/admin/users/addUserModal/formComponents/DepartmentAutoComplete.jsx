@@ -104,7 +104,7 @@ export default function DepartmentAutoComplete({ handleFieldChange }) {
 					}}
 					sx={{ width: 300 }}
 					renderInput={(params) => (
-						<TextField {...params} label="Project" required />
+						<TextField {...params} label="Project" />
 					)}
 				/>
 			)}

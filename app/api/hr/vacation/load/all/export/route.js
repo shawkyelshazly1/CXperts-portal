@@ -1,4 +1,4 @@
-import { loadEmployeesVacationRequestsCount } from "@/helpers/hr/vacation";
+import { exportEmployeesVacationRequests } from "@/helpers/hr/vacation";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
@@ -45,7 +45,7 @@ export async function GET(req) {
 			? []
 			: req.nextUrl.searchParams.get(["approvalStatus"]).split(",");
 
-	let requestsCount = await loadEmployeesVacationRequestsCount(
+	let requests = await exportEmployeesVacationRequests(
 		departments,
 		positions,
 		from,
@@ -53,10 +53,9 @@ export async function GET(req) {
 		employeeId,
 		approvalStatuses
 	);
-	requestsCount = { count: requestsCount };
 
-	if (requestsCount) {
-		return NextResponse.json(requestsCount);
+	if (requests) {
+		return NextResponse.json(requests);
 	} else {
 		return new Response("Something went wrong!", { status: 422 });
 	}

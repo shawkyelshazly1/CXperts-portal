@@ -8,7 +8,10 @@ export async function GET(req) {
 		return new Response("Not Authorized", { status: 401 });
 	}
 
-	if (token.user?.department?.name !== "human_resources") {
+	if (
+		token.user?.department?.name !== "human_resources" &&
+		token.user?.department?.name !== "information_technology"
+	) {
 		return new Response("Not Authorized", { status: 401 });
 	}
 
@@ -30,7 +33,17 @@ export async function GET(req) {
 	let to =
 		req.nextUrl.searchParams.get(["to"]) === ""
 			? ""
-			: req.nextUrl.searchParams.get(["to"]).split("}")[0];
+			: req.nextUrl.searchParams.get(["to"]);
+
+	let employeeId =
+		req.nextUrl.searchParams.get(["employeeId"]) === ""
+			? ""
+			: req.nextUrl.searchParams.get(["employeeId"]);
+
+	let approvalStatuses =
+		req.nextUrl.searchParams.get(["approvalStatus"]) === ""
+			? []
+			: req.nextUrl.searchParams.get(["approvalStatus"]).split(",");
 
 	let requests = await loadEmployeesVacationRequests(
 		parseInt(req.nextUrl.searchParams.get(["skip"])),
@@ -38,7 +51,9 @@ export async function GET(req) {
 		departments,
 		positions,
 		from,
-		to
+		to,
+		employeeId,
+		approvalStatuses
 	);
 
 	if (requests) {

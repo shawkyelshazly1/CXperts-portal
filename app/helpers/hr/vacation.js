@@ -1,4 +1,6 @@
 import prisma from "@/prisma/index";
+import exportFromJSON from "export-from-json";
+import moment from "moment";
 
 // load filters values
 export const loadFilters = async () => {
@@ -146,7 +148,9 @@ export const loadEmployeesVacationRequestsCount = async (
 	departments,
 	positions,
 	from,
-	to
+	to,
+	employeeId,
+	approvalStatuses
 ) => {
 	try {
 		let departmentsIds = await getDepartmentsIds(departments);
@@ -174,18 +178,17 @@ export const loadEmployeesVacationRequestsCount = async (
 			}
 		}
 
-		console.log(fromDate === undefined);
-		console.log(toDate === undefined);
-
 		let teamVacationRequestsCount = await prisma.vacationRequest.count({
 			where: {
-				approvalStatus: { not: "pending" },
 				employee: {
 					departmentId:
 						departmentsIds.length > 0 ? { in: departmentsIds } : undefined,
 					positionId:
 						positionsIds.length > 0 ? { in: positionsIds } : undefined,
+					employeeId: employeeId?.toLowerCase().trim() || undefined,
 				},
+				approvalStatus:
+					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
 
 				OR: [
 					{
@@ -239,7 +242,9 @@ export const loadEmployeesVacationRequests = async (
 	departments,
 	positions,
 	from,
-	to
+	to,
+	employeeId,
+	approvalStatuses
 ) => {
 	try {
 		let departmentsIds = await getDepartmentsIds(departments);
@@ -270,13 +275,15 @@ export const loadEmployeesVacationRequests = async (
 
 		let vacationRequests = await prisma.vacationRequest.findMany({
 			where: {
-				approvalStatus: { not: "pending" },
 				employee: {
 					departmentId:
 						departmentsIds.length > 0 ? { in: departmentsIds } : undefined,
 					positionId:
 						positionsIds.length > 0 ? { in: positionsIds } : undefined,
+					employeeId: employeeId?.toLowerCase().trim() || undefined,
 				},
+				approvalStatus:
+					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
 
 				OR: [
 					{
@@ -350,6 +357,125 @@ export const loadEmployeesVacationRequests = async (
 	}
 };
 
+// export vacation requests
+
+export const exportEmployeesVacationRequests = async (
+	departments,
+	positions,
+	from,
+	to,
+	employeeId,
+	approvalStatuses
+) => {
+	try {
+		let departmentsIds = await getDepartmentsIds(departments);
+		let positionsIds = await getPositionsIds(positions);
+
+		let fromDate = from === undefined || from === "" ? undefined : from;
+		let toDate = to === undefined || to === "" ? undefined : to;
+
+		// Check if fromDate and toDate are valid dates
+		if (fromDate) {
+			const parsedFromDate = new Date(fromDate);
+
+			if (!isNaN(parsedFromDate.getTime())) {
+				fromDate = parsedFromDate;
+			} else {
+				fromDate = undefined;
+			}
+		}
+
+		if (toDate) {
+			const parsedToDate = new Date(toDate);
+			if (!isNaN(parsedToDate.getTime())) {
+				toDate = parsedToDate;
+			} else {
+				toDate = undefined;
+			}
+		}
+
+		let vacationRequests = await prisma.vacationRequest.findMany({
+			where: {
+				employee: {
+					departmentId:
+						departmentsIds.length > 0 ? { in: departmentsIds } : undefined,
+					positionId:
+						positionsIds.length > 0 ? { in: positionsIds } : undefined,
+					employeeId: employeeId?.toLowerCase().trim() || undefined,
+				},
+				approvalStatus:
+					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
+
+				OR: [
+					{
+						from:
+							toDate !== undefined
+								? {
+										lte: toDate,
+								  }
+								: {
+										lte: new Date(3000, 1, 1),
+								  },
+						to:
+							fromDate !== undefined
+								? {
+										gte: fromDate,
+								  }
+								: {
+										gte: new Date(1900, 1, 1),
+								  },
+					},
+					{
+						from:
+							fromDate !== undefined
+								? {
+										gte: fromDate,
+								  }
+								: {
+										gte: new Date(1900, 1, 1),
+								  },
+						to:
+							toDate !== undefined
+								? { lte: toDate }
+								: { lte: new Date(3000, 1, 1) },
+					},
+				],
+			},
+			select: {
+				id: true,
+				createdAt: true,
+				employee: {
+					select: {
+						employeeId: true,
+						firstName: true,
+						lastName: true,
+					},
+				},
+				reason: true,
+				from: true,
+				to: true,
+				approvalStatus: true,
+				approvedByManager: {
+					select: {
+						employeeId: true,
+						firstName: true,
+						lastName: true,
+					},
+				},
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+		});
+
+		return vacationRequests;
+	} catch (error) {
+		console.error(error);
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+
 const getDepartmentId = async (departmentName) => {
 	let department = await prisma.department.findFirst({
 		where: { name: departmentName },
@@ -372,4 +498,27 @@ const getPositionId = async (positionName) => {
 const getPositionsIds = async (positions) => {
 	const positionIds = await Promise.all(positions.map(getPositionId));
 	return positionIds;
+};
+
+// export data to csv
+export const exportToCsv = (data) => {
+	let fileName = "VacationRequestsHistory";
+	let exportType = exportFromJSON.types.csv;
+	data = data.map((request) => {
+		return {
+			requestId: request.id,
+			createdAt: moment(request.createdAt).format("MM/DD/yyy"),
+			employeeId: request.employee.employeeId,
+			employee: `${request.employee?.firstName} ${request.employee?.lastName}`,
+			reason: request.reason.split("_").join(" "),
+			from: moment(request.from).format("MM/DD/yyy"),
+			to: moment(request.to).format("MM/DD/yyy"),
+			status: request.approvalStatus,
+			approvedByManager:
+				request.approvalStatus === "pending"
+					? ""
+					: `${request.approvedByManager?.firstName} ${request.approvedByManager?.lastName}`,
+		};
+	});
+	exportFromJSON({ data, fileName, exportType });
 };
