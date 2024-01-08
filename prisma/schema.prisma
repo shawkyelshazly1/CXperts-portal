@@ -97,6 +97,7 @@ model VacationRequest {
   employeeId        String
   approvedBy        String?
   approvedByManager Employee?             @relation("approvedByManager", fields: [approvedBy], references: [employeeId])
+  document          String?
 }
 
 enum VacationRequestStatus {

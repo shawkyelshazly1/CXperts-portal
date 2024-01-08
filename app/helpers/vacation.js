@@ -1,6 +1,7 @@
 import exportFromJSON from "export-from-json";
 import prisma from "../../prisma";
 import moment from "moment";
+import { saveFile } from "./util";
 
 // load user vacation balance
 export const loadUserVacationBalance = async (userId, vacationBalance) => {
@@ -39,7 +40,11 @@ export const loadUserVacationBalance = async (userId, vacationBalance) => {
 };
 
 // submit vacation request
-export const submitVacationRequest = async (vacationData, userId) => {
+export const submitVacationRequest = async (
+	vacationData,
+	userId,
+	writeFile
+) => {
 	try {
 		let days = parseInt(
 			moment(vacationData.to).diff(moment(vacationData.from), "days") + 1
@@ -114,24 +119,53 @@ export const submitVacationRequest = async (vacationData, userId) => {
 			}
 		}
 
-		let vacationRequest = await prisma.vacationRequest.create({
-			data: {
-				...vacationData,
-				employeeId: userId,
-				approvalStatus: "pending",
-			},
-		});
+		if (vacationData.reason === "sick") {
+			if (
+				!vacationData.file ||
+				vacationData.file === null ||
+				vacationData.file === ""
+			) {
+				throw new Error("Please upload a sick note!");
+			}
 
-		// // update user balance
-		// if (["casual"].includes(vacationData.reason)) {
-		// 	let result = await updateEmployeeVacationBalance(userId, days);
+			// upload file
+			let fileName = `sicknote-${userId}-${moment(Date.now()).format(
+				"MM-DD-YYYY"
+			)}.${vacationData.file.name.split(".").pop()}`;
 
-		// 	if (!result) {
-		// 		throw new Error("Something went wrong!");
-		// 	}
-		// }
-
-		return vacationRequest;
+			let filePath = await saveFile(
+				vacationData.file,
+				fileName,
+				"./public/documents/sicknotes",
+				writeFile
+			);
+			if (filePath) {
+				let vacationRequest = await prisma.vacationRequest.create({
+					data: {
+						reason: vacationData.reason,
+						from: vacationData.from,
+						to: vacationData.to,
+						employeeId: userId,
+						approvalStatus: "pending",
+						document: fileName,
+					},
+				});
+				return vacationRequest;
+			} else {
+				throw new Error("Something went wrong!");
+			}
+		} else {
+			let vacationRequest = await prisma.vacationRequest.create({
+				data: {
+					reason: vacationData.reason,
+					from: vacationData.from,
+					to: vacationData.to,
+					employeeId: userId,
+					approvalStatus: "pending",
+				},
+			});
+			return vacationRequest;
+		}
 	} catch (error) {
 		console.error(error);
 		return { error: error.message };
@@ -166,6 +200,7 @@ export const loadVacationRequests = async (userId, skip, take) => {
 						lastName: true,
 					},
 				},
+				document: true,
 			},
 			orderBy: {
 				createdAt: "desc",

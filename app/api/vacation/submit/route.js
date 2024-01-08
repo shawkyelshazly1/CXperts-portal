@@ -1,6 +1,7 @@
 import { submitVacationRequest } from "@/helpers/vacation";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
+import { writeFile } from "fs/promises";
 
 export async function POST(req) {
 	const token = await getToken({ req });
@@ -8,9 +9,20 @@ export async function POST(req) {
 		return new Response("Not Authorized", { status: 401 });
 	}
 
-	let body = await req.json();
+	let formData = await req.formData();
 
-	let newRequest = await submitVacationRequest(body, token?.user.employeeId);
+	let vacationData = {
+		reason: formData.get("reason"),
+		from: formData.get("from"),
+		to: formData.get("to"),
+		file: formData.get("file"),
+	};
+
+	let newRequest = await submitVacationRequest(
+		vacationData,
+		token?.user.employeeId,
+		writeFile
+	);
 
 	if (newRequest) {
 		return NextResponse.json(newRequest);
