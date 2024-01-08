@@ -51,8 +51,26 @@ export const submitVacationRequest = async (vacationData, userId) => {
 			},
 			select: {
 				vacationBalance: true,
+				position: true,
 			},
 		});
+
+		if (employee.position.title === "representative") {
+			const today = moment();
+
+			const isBeforeFriday = today.isoWeekday() < 5;
+
+			const weeksToAdd = isBeforeFriday ? 2 : 3;
+
+			const nextApplicableMonday = today
+				.clone()
+				.add(weeksToAdd, "weeks")
+				.startOf("isoWeek");
+
+			if (moment(vacationData.from).isBefore(nextApplicableMonday)) {
+				throw new Error("Invalid Dates");
+			}
+		}
 
 		if (vacationData.reason !== "casual") {
 			if (vacationData.reason === "annual" && employee.vacationBalance < days) {

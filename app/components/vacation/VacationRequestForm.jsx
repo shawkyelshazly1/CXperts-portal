@@ -151,6 +151,23 @@ export default function VacationRequestForm({ closeModal }) {
 			});
 	};
 
+	const getMinDate = () => {
+		const today = moment();
+
+		const isRepresentative =
+			userData?.user?.position.title === "representative";
+		const isBeforeFriday = today.isoWeekday() < 5;
+
+		const weeksToAdd = isBeforeFriday ? 2 : 3;
+
+		const nextApplicableMonday = today
+			.clone()
+			.add(weeksToAdd, "weeks")
+			.startOf("isoWeek");
+
+		return isRepresentative && date < nextApplicableMonday;
+	};
+
 	return (
 		<form
 			onSubmit={handleFormSubmission}
@@ -170,8 +187,7 @@ export default function VacationRequestForm({ closeModal }) {
 							.filter(
 								(vacationType) =>
 									userData?.user?.position.title !== "representative" ||
-									vacationType === "annual" ||
-									vacationType === "sick"
+									vacationType === "annual"
 							)
 							.map((vacationType, idx) => (
 								<MenuItem value={vacationType.toLowerCase()} key={idx}>
@@ -189,22 +205,25 @@ export default function VacationRequestForm({ closeModal }) {
 					<DatePicker
 						label="From"
 						shouldDisableDate={(date) => {
-							if (vacationReason !== "annual") return false;
-							const sevenDaysFromNow = moment().add(7, "days").startOf("day");
-							return (
-								userData?.user?.position.title === "representative" &&
-								date < sevenDaysFromNow
-							);
+							const today = moment();
+
+							const isRepresentative =
+								userData?.user?.position.title === "representative";
+							const isBeforeFriday = today.isoWeekday() < 5;
+
+							const weeksToAdd = isBeforeFriday ? 2 : 3;
+
+							const nextApplicableMonday = today
+								.clone()
+								.add(weeksToAdd, "weeks")
+								.startOf("isoWeek");
+
+							return isRepresentative && date < nextApplicableMonday;
 						}}
 						onChange={(value) => {
 							setDate({ ...date, from: value.toISOString() });
 						}}
-						minDate={
-							vacationReason === "annual" &&
-							userData?.user?.position.title === "representative"
-								? moment().add(7, "days")
-								: undefined
-						}
+						minDate={getMinDate()}
 					/>
 				</FormControl>
 				<FormControl fullWidth required>
