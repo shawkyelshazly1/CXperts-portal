@@ -46,7 +46,7 @@ export const loadProjectRequestsCount = async (projects) => {
 	}
 };
 
-// Load Manager pending Team requests
+// Load project agents pending Team requests
 export const loadProjectVacationRequests = async (skip, take, projects) => {
 	try {
 		let projectsIds = await getProjectsIds(projects);
