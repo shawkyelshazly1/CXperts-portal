@@ -1,4 +1,5 @@
 import FilterPane from "@/components/hr/vacations/FilterPane";
+import SickVacationRequests from "@/components/hr/vacations/SickVacationRequests";
 import { loadFilters, loadHRVacationRequests } from "@/helpers/hr/vacation";
 import { Suspense } from "react";
 import { ClipLoader } from "react-spinners";
@@ -7,8 +8,6 @@ export default async function Page({ searchParams }) {
 	let filters = await loadFilters();
 
 	let vacationRequests = await loadHRVacationRequests(searchParams);
-
-	console.log(vacationRequests);
 
 	return (
 		<div className="w-full flex container gap-4">
@@ -24,6 +23,8 @@ export default async function Page({ searchParams }) {
 				{/* <Suspense
 					fallback={<ClipLoader color="#1770b8" size={40} />}
 				></Suspense> */}
+
+				<SickVacationRequests />
 			</div>
 		</div>
 	);

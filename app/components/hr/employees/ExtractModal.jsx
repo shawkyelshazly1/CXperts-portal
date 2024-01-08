@@ -50,7 +50,6 @@ const defaultFields = {
 };
 
 export default function ExtractModal({ employees }) {
-	console.log(employees);
 	const [open, setOpen] = useState(false);
 
 	const [selectedFields, setSelectedFields] = useState({

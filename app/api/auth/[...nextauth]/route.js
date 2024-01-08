@@ -38,7 +38,6 @@ export const authOptions = {
 				if (employee) {
 					return Promise.resolve(employee);
 				} else {
-					console.log("here");
 					throw new Error("Invalid username or password.");
 				}
 			},
