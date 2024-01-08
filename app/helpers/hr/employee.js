@@ -7,7 +7,7 @@ export const searchEmployees = async (searchParams) => {
 		let employees = await prisma.employee.findMany({
 			where: {
 				OR: [
-					{ employeeId: { equals: searchParams.search || "" } },
+					{ employeeId: { contains: searchParams.search || "" } },
 					{ firstName: { contains: searchParams.search?.split(" ")[0] } },
 					{
 						lastName: {
@@ -22,6 +22,12 @@ export const searchEmployees = async (searchParams) => {
 						},
 					},
 					{
+						project: {
+							name: { contains: searchParams.search?.split(" ").join("_") },
+						},
+					},
+
+					{
 						position: {
 							title: { contains: searchParams.search?.split(" ").join("_") },
 						},
@@ -32,6 +38,7 @@ export const searchEmployees = async (searchParams) => {
 					searchParams.department === undefined
 						? {}
 						: { name: { in: searchParams.department?.split(",") } },
+
 				position:
 					searchParams.position === undefined
 						? {}
@@ -57,7 +64,11 @@ export const searchEmployees = async (searchParams) => {
 // load filters values
 export const loadFilters = async () => {
 	try {
-		let departments = await prisma.department.findMany({});
+		let departments = await prisma.department.findMany({
+			where: {
+				parentId: null,
+			},
+		});
 		let positions = await prisma.position.findMany({});
 
 		return { departments, positions };
