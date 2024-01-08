@@ -13,7 +13,7 @@ import { useSession } from "next-auth/react";
 import S from "underscore.string";
 
 export default function VacationRequestForm({ closeModal }) {
-	const { data } = useSession();
+	const { data: userData } = useSession();
 
 	const [date, setDate] = useState({ from: "", to: "" });
 
@@ -56,7 +56,33 @@ export default function VacationRequestForm({ closeModal }) {
 				if (data.error) {
 					toast.error(data.error);
 				} else {
-					toast.success("Request Submitted.");
+					toast
+						.promise(
+							sendRequestSubmissionEmail(
+								vacationReason,
+								userData?.user?.email,
+								date
+							),
+							{
+								loading: "Submitting your request...",
+								success: "Request submitted successfully!",
+								error:
+									"Something went wrong! Refresh the page to confirm the submission.",
+							}
+						)
+						.then(async () => {
+							if (vacationReason !== "sick") {
+								await sendRequestManagerEmail(
+									vacationReason,
+									date,
+									userData?.user?.manager?.email,
+									S(userData?.user?.employeeId).capitalize().value(),
+									S(userData?.user?.firstName).capitalize().value() +
+										" " +
+										S(userData?.user?.lastName).capitalize().value()
+								);
+							}
+						});
 					closeModal();
 				}
 			})
@@ -64,6 +90,66 @@ export default function VacationRequestForm({ closeModal }) {
 	};
 
 	const vacationTypes = ["annual", "casual", "sick", "business_trip"];
+
+	//Send request email
+	const sendRequestSubmissionEmail = async (vacationReason, email, date) => {
+		// send api request to send welcome emails to new employees
+		await fetch("/api/vacation/send-request-email", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				vacationType: vacationReason,
+				from: date.from,
+				to: date.to,
+				email: email,
+			}),
+		})
+			.then(async (res) => {
+				if (!res.ok) {
+					throw new Error("Failed to send Request email.");
+				}
+				return await res.json();
+			})
+			.catch((error) => {
+				toast.error(error.message);
+			});
+	};
+
+	//Send request email
+	const sendRequestManagerEmail = async (
+		vacationReason,
+		date,
+		email,
+		employeeId,
+		employeeName
+	) => {
+		// send api request to send welcome emails to new employees
+		await fetch("/api/vacation/send-manager-email", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				vacationType: vacationReason,
+				from: date.from,
+				to: date.to,
+				email: email,
+				employeeId,
+				employeeName,
+			}),
+		})
+			.then(async (res) => {
+				if (!res.ok) {
+					throw new Error("Failed to send Request email to Manager.");
+				}
+				return await res.json();
+			})
+			.catch((error) => {
+				toast.error(error.message);
+			});
+	};
 
 	return (
 		<form
@@ -83,7 +169,7 @@ export default function VacationRequestForm({ closeModal }) {
 						{vacationTypes
 							.filter(
 								(vacationType) =>
-									data?.user?.position.title !== "representative" ||
+									userData?.user?.position.title !== "representative" ||
 									vacationType === "annual" ||
 									vacationType === "sick"
 							)
@@ -106,7 +192,7 @@ export default function VacationRequestForm({ closeModal }) {
 							if (vacationReason !== "annual") return false;
 							const sevenDaysFromNow = moment().add(7, "days").startOf("day");
 							return (
-								data?.user?.position.title === "representative" &&
+								userData?.user?.position.title === "representative" &&
 								date < sevenDaysFromNow
 							);
 						}}
@@ -115,7 +201,7 @@ export default function VacationRequestForm({ closeModal }) {
 						}}
 						minDate={
 							vacationReason === "annual" &&
-							data?.user?.position.title === "representative"
+							userData?.user?.position.title === "representative"
 								? moment().add(7, "days")
 								: undefined
 						}

@@ -177,19 +177,56 @@ export default function AgentsVacationRequestsTable() {
 				if (data.error) {
 					throw new Error(data.error);
 				}
-				toast.success("Vacation Request Updated.");
+				toast
+					.promise(sendRequestFeedbackEmail(requestId, status), {
+						loading: "Updating Request Status...",
+						success: "Vacation Request Updated!",
+						error: "Failed to update status!, please refresh page to confirm.",
+					})
+					.then(() => {
+						// remove request from the data
+						let updatedRequests = requests.filter(
+							(request) => parseInt(request.id) !== parseInt(requestId)
+						);
+						setRequests(updatedRequests);
+						return;
+					});
+
 				// remove request from the data
 				let updatedRequests = requests.filter(
 					(request) => parseInt(request.id) !== parseInt(requestId)
 				);
 				setRequests(updatedRequests);
-				return;
 			})
 			.catch((error) => {
 				toast.error(error.message);
 			})
 			.finally(() => {
 				setLoadingApprovalAction(false);
+			});
+	};
+
+	//Send request feedback email
+	const sendRequestFeedbackEmail = async (requestId, status) => {
+		// send api request to send welcome emails to new employees
+		await fetch("/api/vacation/send-request-feedback-email", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				requestId,
+				status,
+			}),
+		})
+			.then(async (res) => {
+				if (!res.ok) {
+					throw new Error("Failed to send Request feedback email.");
+				}
+				return await res.json();
+			})
+			.catch((error) => {
+				toast.error(error.message);
 			});
 	};
 

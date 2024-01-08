@@ -7,8 +7,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = "postgresql://postgres:AdminP@$$w0rd@localhost:5432/CXperts_db?schema=public" // uses connection pooling
-  directUrl = "postgresql://postgres:AdminP@$$w0rd@localhost:5432/CXperts_db?schema=public" // uses a direct connection
+  url       = "postgresql://postgres:root@localhost:5432/CXperts_db?schema=public" // uses connection pooling
+  directUrl = "postgresql://postgres:root@localhost:5432/CXperts_db?schema=public" // uses a direct connection
 }
 
 model Department {

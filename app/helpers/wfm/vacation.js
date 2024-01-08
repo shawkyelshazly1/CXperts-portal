@@ -30,7 +30,7 @@ export const loadProjectRequestsCount = async (projects) => {
 		let teamVacationRequestsCount = await prisma.vacationRequest.count({
 			where: {
 				approvalStatus: "pending",
-				reason: { in: ["annual", "casual"] },
+				reason: { in: ["annual"] },
 				employee: {
 					departmentId:
 						projectsIds.length > 0 ? { in: projectsIds } : undefined,
@@ -54,7 +54,7 @@ export const loadProjectVacationRequests = async (skip, take, projects) => {
 		let vacationRequests = await prisma.vacationRequest.findMany({
 			where: {
 				approvalStatus: "pending",
-				reason: { in: ["annual", "casual"] },
+				reason: { in: ["annual"] },
 				employee: {
 					departmentId:
 						projectsIds.length > 0 ? { in: projectsIds } : undefined,
@@ -104,7 +104,7 @@ const getProjectsIds = async (projects) => {
 // update request status as manager
 export const updateRequestStatus = async (data, user) => {
 	try {
-		if (user?.department.name !== "workforce") {
+		if (user?.department.name !== "workforce_management") {
 			return null;
 		}
 
@@ -133,7 +133,7 @@ export const updateRequestStatus = async (data, user) => {
 			return null;
 		}
 
-		if (data.status === "approved") {
+		if (data.status === "approved" && request.reason === "annual") {
 			// update employee Balance
 			let result = await updateEmployeeVacationBalance(
 				request.employee.employeeId,
