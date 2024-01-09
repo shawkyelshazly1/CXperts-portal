@@ -44,7 +44,7 @@ export default function SearchBar() {
 	// EFFECT: Debounce Input Value
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			setDebouncedValue(inputValue);
+			setDebouncedValue(inputValue.toLowerCase());
 		}, 500);
 
 		return () => {

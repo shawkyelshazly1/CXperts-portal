@@ -1,6 +1,7 @@
 import exportFromJSON from "export-from-json";
 import prisma from "../../prisma";
 import moment from "moment";
+import { saveFile } from "./util";
 
 // load user vacation balance
 export const loadUserVacationBalance = async (userId, vacationBalance) => {
@@ -39,7 +40,11 @@ export const loadUserVacationBalance = async (userId, vacationBalance) => {
 };
 
 // submit vacation request
-export const submitVacationRequest = async (vacationData, userId) => {
+export const submitVacationRequest = async (
+	vacationData,
+	userId,
+	writeFile
+) => {
 	try {
 		let days = parseInt(
 			moment(vacationData.to).diff(moment(vacationData.from), "days") + 1
@@ -51,8 +56,26 @@ export const submitVacationRequest = async (vacationData, userId) => {
 			},
 			select: {
 				vacationBalance: true,
+				position: true,
 			},
 		});
+
+		if (employee.position.title === "representative") {
+			const today = moment();
+
+			const isBeforeFriday = today.isoWeekday() < 5;
+
+			const weeksToAdd = isBeforeFriday ? 2 : 3;
+
+			const nextApplicableMonday = today
+				.clone()
+				.add(weeksToAdd, "weeks")
+				.startOf("isoWeek");
+
+			if (moment(vacationData.from).isBefore(nextApplicableMonday)) {
+				throw new Error("Invalid Dates");
+			}
+		}
 
 		if (vacationData.reason !== "casual") {
 			if (vacationData.reason === "annual" && employee.vacationBalance < days) {
@@ -91,28 +114,58 @@ export const submitVacationRequest = async (vacationData, userId) => {
 				throw new Error("Insufficient Casual Balance!");
 			} else if (isNaN(parseInt(daysByReason["casual"])) && days > 6) {
 				throw new Error("Insufficient Casual Balance!");
+			} else if (days > employee.vacationBalance) {
+				throw new Error("Insufficient Balance!");
 			}
 		}
 
-		let vacationRequest = await prisma.vacationRequest.create({
-			data: {
-				...vacationData,
-				employeeId: userId,
-				approvalStatus:
-					vacationData.reason === "casual" ? "approved" : "pending",
-			},
-		});
+		if (vacationData.reason === "sick") {
+			if (
+				!vacationData.file ||
+				vacationData.file === null ||
+				vacationData.file === ""
+			) {
+				throw new Error("Please upload a sick note!");
+			}
 
-		// update user balance
-		if (["casual"].includes(vacationData.reason)) {
-			let result = await updateEmployeeVacationBalance(userId, days);
+			// upload file
+			let fileName = `sicknote-${userId}-${moment(Date.now()).format(
+				"MM-DD-YYYY"
+			)}.${vacationData.file.name.split(".").pop()}`;
 
-			if (!result) {
+			let filePath = await saveFile(
+				vacationData.file,
+				fileName,
+				"./public/documents/sicknotes",
+				writeFile
+			);
+			if (filePath) {
+				let vacationRequest = await prisma.vacationRequest.create({
+					data: {
+						reason: vacationData.reason,
+						from: vacationData.from,
+						to: vacationData.to,
+						employeeId: userId,
+						approvalStatus: "pending",
+						document: fileName,
+					},
+				});
+				return vacationRequest;
+			} else {
 				throw new Error("Something went wrong!");
 			}
+		} else {
+			let vacationRequest = await prisma.vacationRequest.create({
+				data: {
+					reason: vacationData.reason,
+					from: vacationData.from,
+					to: vacationData.to,
+					employeeId: userId,
+					approvalStatus: "pending",
+				},
+			});
+			return vacationRequest;
 		}
-
-		return vacationRequest;
 	} catch (error) {
 		console.error(error);
 		return { error: error.message };
@@ -147,6 +200,7 @@ export const loadVacationRequests = async (userId, skip, take) => {
 						lastName: true,
 					},
 				},
+				document: true,
 			},
 			orderBy: {
 				createdAt: "desc",
@@ -220,17 +274,34 @@ export const loadVacationRequestsCount = async (userId) => {
 // Load manager pending team requests
 export const loadTeamRequestsCount = async (userId) => {
 	try {
-		let teamVacationRequestsCount = await prisma.vacationRequest.count({
+		let teamVacationRequestsCount = await prisma.vacationRequest.findMany({
 			where: {
 				approvalStatus: "pending",
-				reason: "annual",
+				reason: { not: "sick" },
 				employee: {
 					managerId: userId,
+					position: {
+						title: { not: "representative" },
+					},
 				},
+			},
+			select: {
+				employee: {
+					select: {
+						position: {
+							select: {
+								title: true,
+							},
+						},
+						managerId: true,
+					},
+				},
+				approvalStatus: true,
+				reason: true,
 			},
 		});
 
-		return teamVacationRequestsCount;
+		return teamVacationRequestsCount.length;
 	} catch (error) {
 		console.error(error);
 	} finally {
@@ -244,9 +315,12 @@ export const loadTeamVacationRequests = async (userId, skip, take) => {
 		let vacationRequests = await prisma.vacationRequest.findMany({
 			where: {
 				approvalStatus: "pending",
-				reason: "annual",
+				reason: { not: "sick" },
 				employee: {
 					managerId: userId,
+					position: {
+						title: { not: "representative" },
+					},
 				},
 			},
 			select: {
@@ -257,6 +331,11 @@ export const loadTeamVacationRequests = async (userId, skip, take) => {
 						employeeId: true,
 						firstName: true,
 						lastName: true,
+						position: {
+							select: {
+								title: true,
+							},
+						},
 					},
 				},
 				reason: true,
@@ -290,11 +369,31 @@ export const updateRequestStatus = async (data, managerId) => {
 						employeeId: true,
 					},
 				},
+				reason: true,
 			},
 		});
 
 		if (request.employee.managerId !== managerId) {
 			return null;
+		}
+
+		// validate employee balance for annual and casual
+		if (
+			(request.reason === "annual" || request.reason === "casual") &&
+			data.status === "approved"
+		) {
+			let employee = await prisma.employee.findUnique({
+				where: {
+					employeeId: request.employee.employeeId,
+				},
+				select: {
+					vacationBalance: true,
+				},
+			});
+
+			if (employee.vacationBalance < data.days) {
+				throw new Error("Insufficient Balance!");
+			}
 		}
 
 		let updatedRequest = await prisma.vacationRequest.update({
@@ -311,7 +410,10 @@ export const updateRequestStatus = async (data, managerId) => {
 			return null;
 		}
 
-		if (data.status === "approved") {
+		if (
+			data.status === "approved" &&
+			["annual", "casual"].includes(request.reason)
+		) {
 			// update employee Balance
 			let result = await updateEmployeeVacationBalance(
 				request.employee.employeeId,
@@ -326,6 +428,7 @@ export const updateRequestStatus = async (data, managerId) => {
 		return updatedRequest;
 	} catch (error) {
 		console.error(error);
+		return { error: error.message };
 	} finally {
 		await prisma.$disconnect();
 	}

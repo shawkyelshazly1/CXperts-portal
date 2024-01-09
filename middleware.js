@@ -31,18 +31,20 @@ export default withAuth(
 			return NextResponse.redirect(new URL("/", req.url));
 		}
 
-		// // protect vacation page from agents
-		// if (
-		// 	req.nextUrl.pathname.startsWith("/vacation") &&
-		// 	token.user?.position.title === "representative"
-		// ) {
-		// 	return NextResponse.redirect(new URL("/", req.url));
-		// }
-
 		// protect hr pages
 		if (
 			req.nextUrl.pathname.startsWith("/hr") &&
-			token.user?.department.name !== "human_resources"
+			token.user?.department.name !== "human_resources" &&
+			token.user?.department.name !== "information_technology"
+		) {
+			return NextResponse.redirect(new URL("/", req.url));
+		}
+
+		// protect wfm pages
+		if (
+			req.nextUrl.pathname.startsWith("/wfm") &&
+			token.user?.department.name !== "workforce_management" &&
+			token.user?.department.name !== "information_technology"
 		) {
 			return NextResponse.redirect(new URL("/", req.url));
 		}

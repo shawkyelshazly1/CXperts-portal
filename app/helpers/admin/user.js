@@ -201,7 +201,10 @@ export const createUser = async (userDetails) => {
 		let newEmployee = await prisma.employee.create({
 			data: {
 				...userDetails,
-				employeeId:userDetails.employeeId.trim().toLowerCase(),
+				firstName: userDetails.firstName.toLowerCase().trim(),
+				lastName: userDetails.lastName.toLowerCase().trim(),
+				email: userDetails.email.toLowerCase().trim(),
+				employeeId: userDetails.employeeId.trim().toLowerCase(),
 				birthDate: Number.isInteger(userDetails.birthDate)
 					? moment("1900-01-01").add(userDetails.birthDate, "days").toDate()
 					: userDetails.birthDate,

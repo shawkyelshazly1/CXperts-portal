@@ -27,18 +27,32 @@ export const loadProjectRequestsCount = async (projects) => {
 	try {
 		let projectsIds = await getProjectsIds(projects);
 
-		let teamVacationRequestsCount = await prisma.vacationRequest.count({
+		let teamVacationRequestsCount = await prisma.vacationRequest.findMany({
 			where: {
 				approvalStatus: "pending",
-				reason: { in: ["annual", "casual"] },
+				reason: { in: ["annual"] },
 				employee: {
 					departmentId:
 						projectsIds.length > 0 ? { in: projectsIds } : undefined,
+					position: {
+						title: "representative",
+					},
+				},
+			},
+			select: {
+				employee: {
+					select: {
+						position: {
+							select: {
+								title: true,
+							},
+						},
+					},
 				},
 			},
 		});
 
-		return teamVacationRequestsCount;
+		return teamVacationRequestsCount.length;
 	} catch (error) {
 		console.error(error);
 	} finally {
@@ -46,7 +60,7 @@ export const loadProjectRequestsCount = async (projects) => {
 	}
 };
 
-// Load Manager pending Team requests
+// Load project agents pending Team requests
 export const loadProjectVacationRequests = async (skip, take, projects) => {
 	try {
 		let projectsIds = await getProjectsIds(projects);
@@ -54,10 +68,13 @@ export const loadProjectVacationRequests = async (skip, take, projects) => {
 		let vacationRequests = await prisma.vacationRequest.findMany({
 			where: {
 				approvalStatus: "pending",
-				reason: { in: ["annual", "casual"] },
+				reason: { in: ["annual"] },
 				employee: {
 					departmentId:
 						projectsIds.length > 0 ? { in: projectsIds } : undefined,
+					position: {
+						title: "representative",
+					},
 				},
 			},
 			select: {
@@ -68,6 +85,11 @@ export const loadProjectVacationRequests = async (skip, take, projects) => {
 						employeeId: true,
 						firstName: true,
 						lastName: true,
+						position: {
+							select: {
+								title: true,
+							},
+						},
 					},
 				},
 				reason: true,
@@ -104,7 +126,7 @@ const getProjectsIds = async (projects) => {
 // update request status as manager
 export const updateRequestStatus = async (data, user) => {
 	try {
-		if (user?.department.name !== "workforce") {
+		if (user?.department.name !== "workforce_management") {
 			return null;
 		}
 
@@ -133,7 +155,7 @@ export const updateRequestStatus = async (data, user) => {
 			return null;
 		}
 
-		if (data.status === "approved") {
+		if (data.status === "approved" && request.reason === "annual") {
 			// update employee Balance
 			let result = await updateEmployeeVacationBalance(
 				request.employee.employeeId,

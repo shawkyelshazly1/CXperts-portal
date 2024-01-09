@@ -30,7 +30,7 @@ export default function AdminMenu() {
 					fontWeight: "700",
 				}}
 			>
-				Manage
+				Manage Admin
 			</Button>
 			<Menu
 				sx={{ mt: "45px" }}

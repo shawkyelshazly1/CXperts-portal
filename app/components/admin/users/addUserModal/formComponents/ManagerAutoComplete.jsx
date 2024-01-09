@@ -36,7 +36,7 @@ export default function ManagerAutoComplete({
 					setManagers(data);
 				})
 				.catch((error) => {
-					console.log(error);
+					console.error(error);
 					toast.error("Something went wrong!");
 				});
 		}

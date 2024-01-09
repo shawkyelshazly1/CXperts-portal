@@ -20,7 +20,8 @@ export default function HRMenu() {
 
 	const [anchorElHRMenu, setAnchorElHRMenu] = React.useState(null);
 
-	return data?.user?.department.name === "human_resources" ? (
+	return data?.user?.department.name === "human_resources" ||
+		data?.user?.department.name === "information_technology" ? (
 		<Box sx={{ flexGrow: 0 }} className="flex flex-row items-center gap-4">
 			<Button
 				onClick={handleOpenHRMenu}
@@ -30,7 +31,7 @@ export default function HRMenu() {
 					fontWeight: "700",
 				}}
 			>
-				Manage
+				Manage HR
 			</Button>
 			<Menu
 				sx={{ mt: "45px" }}

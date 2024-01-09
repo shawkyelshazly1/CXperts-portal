@@ -1,5 +1,6 @@
 "use client";
 import { DatePicker } from "@mui/x-date-pickers";
+import moment from "moment";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
@@ -62,12 +63,12 @@ export default function DatePickerFrom() {
 	}, [debouncedValue, mounted, handleSearchParams]);
 
 	const handleChange = (value) => {
-		setInputValue(value.toISOString());
+		setInputValue(value?.toISOString() || "");
 	};
 
 	return (
 		<div className="flex flex-col gap-2 w-full">
-			<DatePicker onChange={handleChange} />
+			<DatePicker onChange={handleChange} value={moment(inputValue)} />
 		</div>
 	);
 }

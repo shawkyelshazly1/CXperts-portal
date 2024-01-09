@@ -67,10 +67,11 @@ const columns = [
 		field: "status",
 		headerName: "Status",
 		sortable: false,
+		width: 150,
 		disableExport: false,
 		align: "center",
 		headerAlign: "center",
-		flex: 1,
+
 		renderCell: (params) => {
 			return params.row.accountStatus === "active" ? (
 				<Chip
@@ -92,7 +93,7 @@ const columns = [
 		disableExport: true,
 		align: "center",
 		headerAlign: "center",
-		flex: 1,
+		width: 150,
 		renderCell: (params) => {
 			return (
 				<ActionsMenu

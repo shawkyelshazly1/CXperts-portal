@@ -61,6 +61,27 @@ const columns = [
 		headerAlign: "center",
 	},
 	{
+		field: "document",
+		headerName: "Document",
+		width: 100,
+		align: "center",
+		headerAlign: "center",
+		renderCell: (params) => {
+			return params.row.document ? (
+				<span
+					onClick={() =>
+						window.open(`/documents/sicknotes/${params.row.document}`, "_blank")
+					}
+					className="underline text-blue-400 cursor-pointer"
+				>
+					View Document
+				</span>
+			) : (
+				""
+			);
+		},
+	},
+	{
 		field: "approvalStatus",
 		headerName: "Status",
 		width: 150,
