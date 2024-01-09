@@ -12,7 +12,7 @@ import {
 	Text,
 } from "@react-email/components";
 
-const baseUrl = process.env.URL ? `https://localhost:3000` : "";
+const baseUrl = process.env.URL ? `http://192.168.1.90:3000` : "";
 
 export default function WelcomeEmail({ username, password }) {
 	const previewText = `Explore CXperts Employee Portal`;

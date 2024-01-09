@@ -113,7 +113,7 @@ export default function ProjectsFilter({ projects }) {
 					}
 					MenuProps={MenuProps}
 				>
-					{projects.map((department) => (
+					{projects?.map((department) => (
 						<MenuItem key={department.id} value={department.name}>
 							<Checkbox checked={inputValue.indexOf(department.name) > -1} />
 							<ListItemText

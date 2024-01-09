@@ -20,7 +20,7 @@ export default function WFMMenu() {
 
 	const [anchorElWFMMenu, setAnchorElWFMMenu] = React.useState(null);
 
-	return data?.user?.department.name === "workforce" ? (
+	return data?.user?.department.name === "workforce_management" ? (
 		<Box sx={{ flexGrow: 0 }} className="flex flex-row items-center gap-4">
 			<Button
 				onClick={handleOpenWFMMenu}

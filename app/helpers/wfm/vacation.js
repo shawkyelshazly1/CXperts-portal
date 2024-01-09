@@ -11,7 +11,7 @@ export const loadFilters = async () => {
 
 		let projects = await prisma.department.findMany({
 			where: {
-				parentId: parseInt(operations.id),
+				parentId: parseInt(operations?.id),
 			},
 		});
 
