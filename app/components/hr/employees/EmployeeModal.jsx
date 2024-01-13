@@ -4,8 +4,9 @@ import { Dialog, DialogContent, DialogTitle, Slide } from "@mui/material";
 import React, { forwardRef, useState } from "react";
 import { AiFillCloseCircle } from "react-icons/ai";
 import EmployeeCard from "./EmployeeCard";
-import Image from "next/image";
-import EmployeeViewAndEditForm from "./EmployeeViewAndEditForm";
+import EmployeeView from "./EmployeeView";
+import EmployeeDocuments from "./EmployeeDocuments";
+import { FaUserEdit } from "react-icons/fa";
 
 const Transition = forwardRef(function Transition(props, ref) {
 	return <Slide direction="up" ref={ref} {...props} />;
@@ -13,6 +14,8 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 export default function EmployeeModal({ employee }) {
 	const [open, setOpen] = useState(false);
+
+	console.log(employee);
 
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -24,7 +27,12 @@ export default function EmployeeModal({ employee }) {
 
 	return (
 		<div>
-			<EmployeeCard employee={employee} openModal={handleClickOpen} />
+			<div className="relative group">
+				<EmployeeCard employee={employee} openModal={handleClickOpen} />
+				<div className="absolute h-full bg-green-300 top-0 right-0 rounded-r-3xl justify-center items-center flex px-4 text-white cursor-pointer opacity-0 group-hover:opacity-100">
+					<FaUserEdit size={30} />
+				</div>
+			</div>
 
 			<Dialog
 				open={open}
@@ -34,7 +42,8 @@ export default function EmployeeModal({ employee }) {
 				onClose={handleClose}
 				aria-describedby="alert-dialog-slide-description"
 			>
-				<div className="flex flex-row justify-between w-full items-center py-4 relative">
+				<div></div>
+				<div className="flex flex-col  w-full items-center py-4 relative">
 					<AiFillCloseCircle
 						className="mr-6 text-gray-600 cursor-pointer  absolute top-2 right-0"
 						size={30}
@@ -42,7 +51,9 @@ export default function EmployeeModal({ employee }) {
 							handleClose();
 						}}
 					/>
-					<EmployeeViewAndEditForm employee={employee} />
+					<EmployeeView employee={employee} />
+
+					<EmployeeDocuments employee={employee} />
 				</div>
 			</Dialog>
 		</div>

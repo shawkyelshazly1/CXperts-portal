@@ -63,18 +63,18 @@ model Employee {
 }
 
 model EmployeeDocuments {
-  id                   Int      @id @default(autoincrement())
-  employee             Employee @relation(fields: [employeeId], references: [employeeId])
-  employeeId           String   @unique
-  medicalInsuranceCard String?
-  criminalRecord       String?
-  nationalIdCard       String?
-  birthCertificate     String?
-  educationDegree      String?
-  millitaryCertificate String?
-  insuranceProof       String?
-  workPermit           String?
-  personalPhoto        String?
+  id                     Int      @id @default(autoincrement())
+  employee               Employee @relation(fields: [employeeId], references: [employeeId])
+  employeeId             String   @unique
+  medical_insurance_card String?
+  criminal_record        String?
+  national_id_card       String?
+  birth_certificate      String?
+  education_degree       String?
+  millitary_certificate  String?
+  insurance_proof        String?
+  work_permit            String?
+  personal_photo         String?
 }
 
 model Position {

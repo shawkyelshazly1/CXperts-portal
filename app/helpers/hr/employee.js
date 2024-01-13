@@ -50,6 +50,24 @@ export const searchEmployees = async (searchParams) => {
 				documents: true,
 				manager: true,
 				project: true,
+				subordinates: {
+					select: {
+						firstName: true,
+						lastName: true,
+						position: {
+							select: {
+								title: true,
+							},
+						},
+						employeeId: true,
+						department: {
+							select: {
+								name: true,
+							},
+						},
+					},
+				},
+				
 			},
 		});
 
