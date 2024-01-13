@@ -2,6 +2,9 @@ import exportFromJSON from "export-from-json";
 import prisma from "../../prisma";
 import moment from "moment";
 import { saveFile } from "./util";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "app/util/firebase";
+import { toString } from "lodash";
 
 // load user vacation balance
 export const loadUserVacationBalance = async (userId, vacationBalance) => {
@@ -460,4 +463,31 @@ export const exportToCsv = (data) => {
 		};
 	});
 	exportFromJSON({ data, fileName, exportType });
+};
+
+export const uploadSickNotes = async (file, employeeId) => {
+	return new Promise(async (resolve, reject) => {
+		if (!file) {
+			reject(new Error("No file provided"));
+			return;
+		}
+		const imageName = `sicknote-${employeeId}-${moment().format(
+			"MM-DD-YYYY"
+		)}-${Math.floor(Math.random() * 100)}`;
+		const imageRef = ref(storage, `sicknotes/${imageName}`);
+
+		try {
+			const snapshot = await uploadBytes(imageRef, file);
+			const url = await getDownloadURL(snapshot.ref);
+			if (url) {
+				console.log(url);
+				resolve(url);
+			} else {
+				reject(new Error("Failed to get download URL"));
+			}
+		} catch (error) {
+			console.error("Error uploading or getting download URL:", error);
+			reject(error);
+		}
+	});
 };

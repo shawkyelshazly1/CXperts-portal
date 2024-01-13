@@ -91,12 +91,7 @@ export default function SickVacationRequestsTable() {
 			renderCell: (params) => {
 				return params.row.document ? (
 					<span
-						onClick={() =>
-							window.open(
-								`/documents/sicknotes/${params.row.document}`,
-								"_blank"
-							)
-						}
+						onClick={() => window.open(`${params.row.document}`, "_blank")}
 						className="underline text-blue-400 cursor-pointer"
 					>
 						View Document

@@ -11,6 +11,10 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import S from "underscore.string";
+import { useDropzone } from "react-dropzone";
+import { FaCloudUploadAlt } from "react-icons/fa";
+import { RiFileCloseFill } from "react-icons/ri";
+import { uploadSickNotes } from "@/helpers/vacation";
 
 export default function VacationRequestForm({ closeModal }) {
 	const { data: userData } = useSession();
@@ -19,6 +23,19 @@ export default function VacationRequestForm({ closeModal }) {
 
 	const [vacationReason, setVacationReason] = useState("");
 	const [file, setFile] = useState(null);
+
+	const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+		accept: {
+			"image/*": [".jpeg", ".png", ".webp", ".tiff", ".heif", ".bmp"],
+		},
+		maxSize: 1024 * 1024 * 4,
+		onDropRejected: () => {
+			toast.error("File doesn't match requirements!");
+		},
+		onDropAccepted: (files) => {
+			setFile(files[0]);
+		},
+	});
 
 	const handleChange = (event) => {
 		setVacationReason(event.target.value);
@@ -49,10 +66,18 @@ export default function VacationRequestForm({ closeModal }) {
 		}
 
 		let formData = new FormData();
-		formData.append("file", file);
 		formData.append("reason", vacationReason);
 		formData.append("from", date.from);
 		formData.append("to", date.to);
+
+		// upload image
+		if (file) {
+			await uploadSickNotes(file, userData?.user?.employeeId).then((result) => {
+				formData.append("file", result);
+			});
+		} else {
+			formData.append("file", "");
+		}
 
 		// send api request to submit the request
 		await fetch("/api/vacation/submit", {
@@ -247,7 +272,44 @@ export default function VacationRequestForm({ closeModal }) {
 					/>
 				</FormControl>
 			</div>
-			<Box sx={{ minWidth: 120 }}>{vacationReason === "sick"}</Box>
+			<Box sx={{ minWidth: 120 }}>
+				{vacationReason === "sick" && (
+					<>
+						{file !== null ? (
+							<div className="flex items-center justify-center mx-auto w-fit relative">
+								<span
+									className="absolute right-1 top-1 cursor-pointer"
+									onClick={() => setFile(null)}
+								>
+									<RiFileCloseFill
+										size={25}
+										color="red"
+										onClick={() => {
+											setFile(null);
+										}}
+									/>
+								</span>
+								<img
+									src={URL.createObjectURL(file)}
+									alt="uploaded file"
+									width={100}
+								/>
+							</div>
+						) : (
+							<div
+								{...getRootProps({ className: "dropzone" })}
+								className="rounded-xl border-2 border-dashed py-2 px-4 cursor-pointer"
+							>
+								<input {...getInputProps()} />
+								<div className="flex flex-col items-center justify-center gap-1">
+									<FaCloudUploadAlt size={40} className="text-gray-400/50" />
+									<p>Drag & Drop file here, or click to select file...</p>
+								</div>
+							</div>
+						)}
+					</>
+				)}
+			</Box>
 			<button className="bg-blue-500 text-white font-medium text-lg py-2 px-8 mt-4 rounded-3xl w-fit self-center ">
 				Submit Reqeust
 			</button>
