@@ -76,6 +76,34 @@ export const submitVacationRequest = async (vacationData, userId) => {
 			}
 		}
 
+		const today = moment();
+
+		if (
+			employee.position.title !== "representative" &&
+			vacationData.reason === "annual"
+		) {
+			const variance = days;
+			const from = moment(vacationData.from);
+
+			if (variance >= 1 && variance <= 2 && from.diff(today, "days") < 2) {
+				throw new Error(
+					"Requested vacation must be submitted at least 2 days in advance."
+				);
+			} else if (
+				variance >= 3 &&
+				variance <= 5 &&
+				from.diff(today, "days") < 7
+			) {
+				throw new Error(
+					"requested vacation must be submitted at least 7 days in advance."
+				);
+			} else if (variance > 5 && from.diff(today, "days") < 14) {
+				throw new Error(
+					"Requested vacation must be submitted at least 14 days in advance."
+				);
+			}
+		}
+
 		if (vacationData.reason !== "casual") {
 			if (vacationData.reason === "annual" && employee.vacationBalance < days) {
 				throw new Error("Insufficient Balance!");
