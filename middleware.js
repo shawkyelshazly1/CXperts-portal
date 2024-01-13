@@ -49,9 +49,13 @@ export default withAuth(
 			return NextResponse.redirect(new URL("/", req.url));
 		}
 	},
+
 	{
 		pages: {
 			signIn: "/login",
 		},
+		
 	}
 );
+
+

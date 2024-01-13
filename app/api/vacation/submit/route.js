@@ -1,7 +1,6 @@
 import { submitVacationRequest } from "@/helpers/vacation";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
 
 export async function POST(req) {
 	const token = await getToken({ req });
@@ -20,8 +19,7 @@ export async function POST(req) {
 
 	let newRequest = await submitVacationRequest(
 		vacationData,
-		token?.user.employeeId,
-		writeFile
+		token?.user.employeeId
 	);
 
 	if (newRequest) {

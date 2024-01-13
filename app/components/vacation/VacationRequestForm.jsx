@@ -11,9 +11,6 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import S from "underscore.string";
-import { IoMdCloseCircle } from "react-icons/io";
-import { SvgIcon } from "@mui/material";
-import { MdPictureAsPdf } from "react-icons/md";
 
 export default function VacationRequestForm({ closeModal }) {
 	const { data: userData } = useSession();
@@ -250,65 +247,7 @@ export default function VacationRequestForm({ closeModal }) {
 					/>
 				</FormControl>
 			</div>
-			<Box sx={{ minWidth: 120 }}>
-				{vacationReason === "sick" && (
-					<label>
-						<input
-							type="file"
-							accept="image/*,application/pdf"
-							hidden
-							onChange={({ target }) => {
-								if (target.files) {
-									let file = target?.files?.[0];
-									if (
-										file &&
-										(file.type === "application/pdf" ||
-											file.type.startsWith("image/"))
-									) {
-										setFile(file);
-									} else {
-										toast.error("Please upload a valid image or PDF file.");
-									}
-								}
-							}}
-						/>
-						<div className="w-40 aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
-							{file ? (
-								<div className="relative w-full h-full flex items-center justify-center">
-									{file &&
-										(file.type.startsWith("image/") ? (
-											<img
-												src={URL.createObjectURL(file)}
-												alt="sick note"
-												className="w-full h-full object-contain"
-											/>
-										) : (
-											file.type === "application/pdf" && (
-												<div className="flex items-center space-x-2 justify-center break-words overflow-wrap w-full">
-													<SvgIcon component={MdPictureAsPdf} color="error" />
-													<span className="truncate text-sm overflow-wrap break-words">
-														{file.name}
-													</span>
-												</div>
-											)
-										))}
-									<IoMdCloseCircle
-										className="absolute top-0 right-0 cursor-pointer"
-										size={30}
-										color="red"
-										onClick={(e) => {
-											e.stopPropagation();
-											setFile(null);
-										}}
-									/>
-								</div>
-							) : (
-								<span>Upload Sick Note</span>
-							)}
-						</div>
-					</label>
-				)}
-			</Box>
+			<Box sx={{ minWidth: 120 }}>{vacationReason === "sick"}</Box>
 			<button className="bg-blue-500 text-white font-medium text-lg py-2 px-8 mt-4 rounded-3xl w-fit self-center ">
 				Submit Reqeust
 			</button>

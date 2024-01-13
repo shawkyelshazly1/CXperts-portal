@@ -44,10 +44,10 @@ export default async function VacationBalanceInfo() {
 										? usedBalance["casual"] === 0 ||
 										  Object.keys(usedBalance).length === 0
 											? 6
-											: 6 - parseInt(usedBalance["casual"]) >
+											: 6 - parseInt(usedBalance["casual"] || 0) >
 											  user.vacationBalance
 											? user.vacationBalance
-											: 6 - parseInt(usedBalance["casual"])
+											: 6 - parseInt(usedBalance["casual"] || 0)
 										: "_"}
 								</>
 							)}

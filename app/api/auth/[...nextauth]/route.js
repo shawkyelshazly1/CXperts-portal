@@ -8,7 +8,7 @@ export const authOptions = {
 	pages: {
 		signIn: "/login",
 	},
-
+	
 	adaptr: PrismaAdapter(prisma),
 	providers: [
 		CredentialsProvider({
@@ -52,12 +52,14 @@ export const authOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
 	callbacks: {
 		async jwt({ token, user }) {
+			
 			if (user && !user.error) {
 				token.user = user;
 			}
 			return token;
 		},
 		async session({ session, token }) {
+		
 			session.user = token.user;
 
 			// refetch user if logged In to update session

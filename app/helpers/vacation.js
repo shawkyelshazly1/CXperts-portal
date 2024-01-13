@@ -40,11 +40,7 @@ export const loadUserVacationBalance = async (userId, vacationBalance) => {
 };
 
 // submit vacation request
-export const submitVacationRequest = async (
-	vacationData,
-	userId,
-	writeFile
-) => {
+export const submitVacationRequest = async (vacationData, userId) => {
 	try {
 		let days = parseInt(
 			moment(vacationData.to).diff(moment(vacationData.from), "days") + 1
@@ -128,32 +124,17 @@ export const submitVacationRequest = async (
 				throw new Error("Please upload a sick note!");
 			}
 
-			// upload file
-			let fileName = `sicknote-${userId}-${moment(Date.now()).format(
-				"MM-DD-YYYY"
-			)}.${vacationData.file.name.split(".").pop()}`;
-
-			let filePath = await saveFile(
-				vacationData.file,
-				fileName,
-				"./public/documents/sicknotes",
-				writeFile
-			);
-			if (filePath) {
-				let vacationRequest = await prisma.vacationRequest.create({
-					data: {
-						reason: vacationData.reason,
-						from: vacationData.from,
-						to: vacationData.to,
-						employeeId: userId,
-						approvalStatus: "pending",
-						document: fileName,
-					},
-				});
-				return vacationRequest;
-			} else {
-				throw new Error("Something went wrong!");
-			}
+			let vacationRequest = await prisma.vacationRequest.create({
+				data: {
+					reason: vacationData.reason,
+					from: vacationData.from,
+					to: vacationData.to,
+					employeeId: userId,
+					approvalStatus: "pending",
+					document: vacationData.file,
+				},
+			});
+			return vacationRequest;
 		} else {
 			let vacationRequest = await prisma.vacationRequest.create({
 				data: {
