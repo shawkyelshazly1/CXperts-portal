@@ -150,7 +150,8 @@ export const loadEmployeesVacationRequestsCount = async (
 	from,
 	to,
 	employeeId,
-	approvalStatuses
+	approvalStatuses,
+	vacationTypes
 ) => {
 	try {
 		let departmentsIds = await getDepartmentsIds(departments);
@@ -189,6 +190,7 @@ export const loadEmployeesVacationRequestsCount = async (
 				},
 				approvalStatus:
 					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
+				reason: vacationTypes.length > 0 ? { in: vacationTypes } : undefined,
 
 				OR: [
 					{
@@ -244,7 +246,8 @@ export const loadEmployeesVacationRequests = async (
 	from,
 	to,
 	employeeId,
-	approvalStatuses
+	approvalStatuses,
+	vacationTypes
 ) => {
 	try {
 		let departmentsIds = await getDepartmentsIds(departments);
@@ -284,6 +287,7 @@ export const loadEmployeesVacationRequests = async (
 				},
 				approvalStatus:
 					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
+				reason: vacationTypes.length > 0 ? { in: vacationTypes } : undefined,
 
 				OR: [
 					{
@@ -365,7 +369,8 @@ export const exportEmployeesVacationRequests = async (
 	from,
 	to,
 	employeeId,
-	approvalStatuses
+	approvalStatuses,
+	vacationTypes
 ) => {
 	try {
 		let departmentsIds = await getDepartmentsIds(departments);
@@ -405,6 +410,7 @@ export const exportEmployeesVacationRequests = async (
 				},
 				approvalStatus:
 					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
+				reason: vacationTypes.length > 0 ? { in: vacationTypes } : undefined,
 
 				OR: [
 					{

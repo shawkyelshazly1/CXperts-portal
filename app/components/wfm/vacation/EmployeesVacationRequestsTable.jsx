@@ -14,12 +14,9 @@ export default function EmployeesVacationRequestsTable() {
 	const [departments, setDepartments] = useState([]);
 	const [from, setFrom] = useState("");
 	const [to, setTo] = useState("");
-	const [positions, setPositions] = useState([]);
 	const [approvalStatuses, setApprovalStatuses] = useState([]);
-	const [vacationTypes, setVacationTypes] = useState([]);
 	const [employeeId, setEmployeeId] = useState("");
 	const [loading, setLoading] = useState(false);
-	const [loadingApprovalAction, setLoadingApprovalAction] = useState(false);
 	const [requestsCount, setRequestsCount] = useState(0);
 	const [paginationModel, setPaginationModel] = useState({
 		page: 0,
@@ -40,11 +37,9 @@ export default function EmployeesVacationRequestsTable() {
 		const paramsDepartments =
 			urlSearchParams.get("department")?.split(",") || [];
 
-		const paramsPositions = urlSearchParams.get("position")?.split(",") || [];
 		const paramsApprovalStatus =
 			urlSearchParams.get("approvalStatus")?.split(",") || [];
-		const paramsVacationTypes =
-			urlSearchParams.get("vacationTypes")?.split(",") || [];
+
 		const paramsFrom = urlSearchParams.get("from") || "";
 		const paramsTo = urlSearchParams.get("to") || "";
 		const paramsEmployeeId = urlSearchParams.get("employeeId") || "";
@@ -56,13 +51,6 @@ export default function EmployeesVacationRequestsTable() {
 			setApprovalStatuses(
 				urlSearchParams?.get("approvalStatus")?.split(",") || []
 			);
-		}
-		if (!_.isEqual(vacationTypes, paramsVacationTypes)) {
-			setVacationTypes(urlSearchParams?.get("vacationTypes")?.split(",") || []);
-		}
-
-		if (!_.isEqual(positions, paramsPositions)) {
-			setPositions(urlSearchParams?.get("position")?.split(",") || []);
 		}
 
 		if (!_.isEqual(from, paramsFrom)) {
@@ -173,13 +161,11 @@ export default function EmployeesVacationRequestsTable() {
 	useEffect(() => {
 		async function loadProjectVacationRequestsCount() {
 			await fetch(
-				`/api/hr/vacation/load/all/count?department=${departments.join(
-					","
-				)}&position=${positions.join(
+				`/api/vacation/load/wfm/all/count?department=${departments.join(
 					","
 				)}&from=${from}&to=${to}&employeeId=${employeeId}&approvalStatus=${approvalStatuses.join(
 					","
-				)}&vacationTypes=${vacationTypes.join(",")}`,
+				)}`,
 				{ method: "GET" }
 			)
 				.then(async (res) => {
@@ -198,30 +184,20 @@ export default function EmployeesVacationRequestsTable() {
 		return () => {
 			setRequestsCount(0);
 		};
-	}, [
-		departments,
-		positions,
-		from,
-		to,
-		employeeId,
-		approvalStatuses,
-		vacationTypes,
-	]);
+	}, [departments, from, to, employeeId, approvalStatuses]);
 
 	// load requests
 	useEffect(() => {
 		async function loadProjectRequests() {
 			setLoading(true);
 			await fetch(
-				`/api/hr/vacation/load/all?skip=${
+				`/api/vacation/load/wfm/all?skip=${
 					paginationModel.page * paginationModel.pageSize
 				}&take=${paginationModel.pageSize}&department=${departments.join(
 					","
-				)}&position=${positions.join(
-					","
 				)}&from=${from}&to=${to}&employeeId=${employeeId}&approvalStatus=${approvalStatuses.join(
 					","
-				)}&vacationTypes=${vacationTypes.join(",")}`,
+				)}`,
 				{ method: "GET" }
 			)
 				.then(async (res) => {
@@ -245,12 +221,10 @@ export default function EmployeesVacationRequestsTable() {
 	}, [
 		paginationModel.page,
 		departments,
-		positions,
 		from,
 		to,
 		employeeId,
 		approvalStatuses,
-		vacationTypes,
 	]);
 
 	return (

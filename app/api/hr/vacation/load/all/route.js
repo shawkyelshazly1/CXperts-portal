@@ -45,6 +45,11 @@ export async function GET(req) {
 			? []
 			: req.nextUrl.searchParams.get(["approvalStatus"]).split(",");
 
+	let vacationTypes =
+		req.nextUrl.searchParams.get(["vacationTypes"]) === ""
+			? []
+			: req.nextUrl.searchParams.get(["vacationTypes"]).split(",");
+
 	let requests = await loadEmployeesVacationRequests(
 		parseInt(req.nextUrl.searchParams.get(["skip"])),
 		parseInt(req.nextUrl.searchParams.get(["take"])),
@@ -53,7 +58,8 @@ export async function GET(req) {
 		from,
 		to,
 		employeeId,
-		approvalStatuses
+		approvalStatuses,
+		vacationTypes
 	);
 
 	if (requests) {

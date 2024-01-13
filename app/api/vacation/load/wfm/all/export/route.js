@@ -1,4 +1,5 @@
-import { loadEmployeesVacationRequestsCount } from "@/helpers/hr/vacation";
+import { exportEmployeesVacationRequests } from "@/helpers/hr/vacation";
+import { exportAgentsVacationRequests } from "@/helpers/wfm/vacation";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
@@ -9,7 +10,7 @@ export async function GET(req) {
 	}
 
 	if (
-		token.user?.department?.name !== "human_resources" &&
+		token.user?.department?.name !== "workforce_management" &&
 		token.user?.department?.name !== "information_technology"
 	) {
 		return new Response("Not Authorized", { status: 401 });
@@ -19,11 +20,6 @@ export async function GET(req) {
 		req.nextUrl.searchParams.get(["department"]) === ""
 			? []
 			: req.nextUrl.searchParams.get(["department"]).split(",");
-
-	let positions =
-		req.nextUrl.searchParams.get(["position"]) === ""
-			? []
-			: req.nextUrl.searchParams.get(["position"]).split(",");
 
 	let from =
 		req.nextUrl.searchParams.get(["from"]) === ""
@@ -44,23 +40,17 @@ export async function GET(req) {
 		req.nextUrl.searchParams.get(["approvalStatus"]) === ""
 			? []
 			: req.nextUrl.searchParams.get(["approvalStatus"]).split(",");
-	let vacationTypes =
-		req.nextUrl.searchParams.get(["vacationTypes"]) === ""
-			? []
-			: req.nextUrl.searchParams.get(["vacationTypes"]).split(",");
-	let requestsCount = await loadEmployeesVacationRequestsCount(
+
+	let requests = await exportAgentsVacationRequests(
 		departments,
-		positions,
 		from,
 		to,
 		employeeId,
-		approvalStatuses,
-		vacationTypes
+		approvalStatuses
 	);
-	requestsCount = { count: requestsCount };
 
-	if (requestsCount) {
-		return NextResponse.json(requestsCount);
+	if (requests) {
+		return NextResponse.json(requests);
 	} else {
 		return new Response("Something went wrong!", { status: 422 });
 	}

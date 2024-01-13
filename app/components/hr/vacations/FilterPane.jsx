@@ -10,6 +10,7 @@ import { Box, Button, Drawer, Typography } from "@mui/material";
 import { LiaFilterSolid } from "react-icons/lia";
 import EmployeeIdFilter from "./filters/EmployeeIdFilter";
 import StatusFilter from "./filters/StatusFilter";
+import VacationTypeFilter from "./filters/VacationTypeFilter";
 
 export default function FilterPane({ filters }) {
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -46,6 +47,10 @@ export default function FilterPane({ filters }) {
 						</LocalizationProvider>
 						<div className="flex flex-col gap-2">
 							<div className="flex flex-col items-start">
+								<h1 className="text-lg font-semibold">Employee ID</h1>
+								<EmployeeIdFilter />
+							</div>
+							<div className="flex flex-col items-start">
 								<h1 className="text-lg font-semibold">Department</h1>
 								<DepartmentFilter departments={filters.departments} />
 							</div>
@@ -54,12 +59,12 @@ export default function FilterPane({ filters }) {
 								<PositionFilter positions={filters.positions} />
 							</div>
 							<div className="flex flex-col items-start">
-								<h1 className="text-lg font-semibold">Position</h1>
-								<StatusFilter />
+								<h1 className="text-lg font-semibold">Vacation Type</h1>
+								<VacationTypeFilter />
 							</div>
 							<div className="flex flex-col items-start">
-								<h1 className="text-lg font-semibold">Employee ID</h1>
-								<EmployeeIdFilter />
+								<h1 className="text-lg font-semibold">Approval Status</h1>
+								<StatusFilter />
 							</div>
 						</div>
 					</div>

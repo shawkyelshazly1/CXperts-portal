@@ -9,8 +9,15 @@ export async function POST(req) {
 	}
 
 	let body = await req.json();
-
-	let updatedRequest = await updateRequestStatus(body, token?.user);
+	let updatedRequest = null;
+	try {
+		updatedRequest = await updateRequestStatus(body, token?.user);
+		if (updatedRequest.message) {
+			throw new Error(updatedRequest.message);
+		}
+	} catch (error) {
+		return new Response("Something went wrong!", { status: 401 });
+	}
 
 	if (updatedRequest) {
 		return NextResponse.json(updatedRequest);

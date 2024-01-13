@@ -10,9 +10,7 @@ export default function ExportLeavesButton() {
 	const [departments, setDepartments] = useState([]);
 	const [from, setFrom] = useState("");
 	const [to, setTo] = useState("");
-	const [positions, setPositions] = useState([]);
 	const [approvalStatuses, setApprovalStatuses] = useState([]);
-	const [vacationTypes, setVacationTypes] = useState([]);
 	const [employeeId, setEmployeeId] = useState("");
 
 	const searchParams = useSearchParams();
@@ -29,11 +27,9 @@ export default function ExportLeavesButton() {
 		const paramsDepartments =
 			urlSearchParams.get("department")?.split(",") || [];
 
-		const paramsPositions = urlSearchParams.get("position")?.split(",") || [];
 		const paramsApprovalStatus =
 			urlSearchParams.get("approvalStatus")?.split(",") || [];
-		const paramsVacationTypes =
-			urlSearchParams.get("vacationTypes")?.split(",") || [];
+
 		const paramsFrom = urlSearchParams.get("from") || "";
 		const paramsTo = urlSearchParams.get("to") || "";
 		const paramsEmployeeId = urlSearchParams.get("employeeId") || "";
@@ -45,13 +41,6 @@ export default function ExportLeavesButton() {
 			setApprovalStatuses(
 				urlSearchParams?.get("approvalStatus")?.split(",") || []
 			);
-		}
-		if (!_.isEqual(vacationTypes, paramsVacationTypes)) {
-			setVacationTypes(urlSearchParams?.get("vacationTypes")?.split(",") || []);
-		}
-
-		if (!_.isEqual(positions, paramsPositions)) {
-			setPositions(urlSearchParams?.get("position")?.split(",") || []);
 		}
 
 		if (!_.isEqual(from, paramsFrom)) {
@@ -71,13 +60,11 @@ export default function ExportLeavesButton() {
 
 	async function loadProjectRequests() {
 		await fetch(
-			`/api/hr/vacation/load/all/export?department=${departments.join(
-				","
-			)}&position=${positions.join(
+			`/api/vacation/load/wfm/all/export?department=${departments.join(
 				","
 			)}&from=${from}&to=${to}&employeeId=${employeeId}&approvalStatus=${approvalStatuses.join(
 				","
-			)}&vacationTypes=${vacationTypes.join(",")}`,
+			)}`,
 			{ method: "GET" }
 		)
 			.then(async (res) => {

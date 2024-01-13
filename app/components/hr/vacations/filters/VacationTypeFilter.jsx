@@ -24,7 +24,7 @@ const MenuProps = {
 	},
 };
 
-export default function PositionFilter({ positions }) {
+export default function VacationTypeFilter() {
 	const [inputValue, setInputValue] = useState([]);
 	const [debouncedValue, setDebouncedValue] = useState([]);
 	const [mounted, setMounted] = useState(false);
@@ -37,9 +37,9 @@ export default function PositionFilter({ positions }) {
 		(debouncedValue) => {
 			let params = new URLSearchParams(window.location.search);
 			if (debouncedValue.length > 0) {
-				params.set("position", debouncedValue);
+				params.set("vacationTypes", debouncedValue);
 			} else {
-				params.delete("position");
+				params.delete("vacationTypes");
 			}
 
 			startTransition(() => {
@@ -52,7 +52,7 @@ export default function PositionFilter({ positions }) {
 	// EFFECT: Set Inital params
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
-		const searchQuery = params.get("position") ?? [];
+		const searchQuery = params.get("vacationTypes") ?? [];
 		if (typeof searchQuery === "string") setInputValue(searchQuery?.split(","));
 		else {
 			setInputValue([]);
@@ -92,19 +92,21 @@ export default function PositionFilter({ positions }) {
 	return (
 		<div className="flex flex-col gap-2 w-full">
 			<FormControl sx={{ m: 1, width: 300 }}>
-				<InputLabel id="position-multiple-checkbox-label">Position</InputLabel>
+				<InputLabel id="approvalStatus-multiple-checkbox-label">
+					Vacation Type
+				</InputLabel>
 				<Select
-					labelId="position-multiple-checkbox-label"
-					id="position-multiple-checkbox"
+					labelId="approvalStatus-multiple-checkbox-label"
+					id="approvalStatus-multiple-checkbox"
 					multiple
-					name="position"
+					name="approvalStatus"
 					value={inputValue}
 					onChange={handleChange}
-					input={<OutlinedInput label="Position" />}
+					input={<OutlinedInput label="Vacation Type" />}
 					renderValue={() =>
 						inputValue
-							.map((position) =>
-								position
+							.map((status) =>
+								status
 									.split("_")
 									.map((word) => S(word).capitalize().value())
 									.join(" ")
@@ -113,11 +115,11 @@ export default function PositionFilter({ positions }) {
 					}
 					MenuProps={MenuProps}
 				>
-					{positions.map((position) => (
-						<MenuItem key={position.id} value={position.title}>
-							<Checkbox checked={inputValue.indexOf(position.title) > -1} />
+					{["annual", "sick", "casual", "business_trip"].map((status, idx) => (
+						<MenuItem key={idx} value={status}>
+							<Checkbox checked={inputValue.indexOf(status) > -1} />
 							<ListItemText
-								primary={position.title
+								primary={status
 									.split("_")
 									.map((word) => S(word).capitalize().value())
 									.join(" ")}

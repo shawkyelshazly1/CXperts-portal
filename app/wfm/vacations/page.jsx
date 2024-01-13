@@ -1,5 +1,7 @@
 import AgentsVacationRequests from "@/components/wfm/vacation/AgentsVacationRequests";
 import ClearFiltersButton from "@/components/wfm/vacation/ClearFiltersButton";
+import EmployeesVacationRequests from "@/components/wfm/vacation/EmployeesVacationRequests";
+import ExportLeavesButton from "@/components/wfm/vacation/ExportLeavesButton";
 import FilterPane from "@/components/wfm/vacation/FilterPane";
 import { loadFilters } from "@/helpers/wfm/vacation";
 
@@ -19,8 +21,10 @@ export default async function Page() {
 					<div className="flex flex-row gap-1">
 						<FilterPane filters={filters} />
 						<ClearFiltersButton />
+						<ExportLeavesButton />
 					</div>
 				</div>
+				<EmployeesVacationRequests />
 
 				<AgentsVacationRequests />
 			</div>

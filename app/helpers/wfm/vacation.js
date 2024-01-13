@@ -127,7 +127,7 @@ const getProjectsIds = async (projects) => {
 export const updateRequestStatus = async (data, user) => {
 	try {
 		if (user?.department.name !== "workforce_management") {
-			return null;
+			throw new Error("Unauthorized");
 		}
 
 		let request = await prisma.vacationRequest.findUnique({
@@ -170,6 +170,7 @@ export const updateRequestStatus = async (data, user) => {
 		return updatedRequest;
 	} catch (error) {
 		console.error(error);
+		return error;
 	} finally {
 		await prisma.$disconnect();
 	}
@@ -200,4 +201,351 @@ const updateEmployeeVacationBalance = async (employeeId, days) => {
 	} else {
 		return false;
 	}
+};
+
+// load employees Vacation Requests count
+export const loadAgentsVacationRequestsCount = async (
+	departments,
+	from,
+	to,
+	employeeId,
+	approvalStatuses
+) => {
+	try {
+		let departmentsIds = await getDepartmentsIds(departments);
+
+		let fromDate = from === undefined || from === "" ? undefined : from;
+		let toDate = to === undefined || to === "" ? undefined : to;
+
+		// Check if fromDate and toDate are valid dates
+		if (fromDate) {
+			const parsedFromDate = new Date(fromDate);
+			if (!isNaN(parsedFromDate.getTime())) {
+				fromDate = parsedFromDate;
+			} else {
+				fromDate = undefined;
+			}
+		}
+
+		if (toDate) {
+			const parsedToDate = new Date(toDate);
+			if (!isNaN(parsedToDate.getTime())) {
+				toDate = parsedToDate;
+			} else {
+				toDate = undefined;
+			}
+		}
+
+		let teamVacationRequestsCount = await prisma.vacationRequest.findMany({
+			where: {
+				employee: {
+					departmentId:
+						departmentsIds.length > 0 ? { in: departmentsIds } : undefined,
+					position: { title: "representative" },
+					employeeId: employeeId?.toLowerCase().trim() || undefined,
+				},
+				approvalStatus:
+					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
+
+				OR: [
+					{
+						from:
+							toDate !== undefined
+								? {
+										lte: toDate,
+								  }
+								: {
+										lte: new Date(3000, 1, 1),
+								  },
+						to:
+							fromDate !== undefined
+								? {
+										gte: fromDate,
+								  }
+								: {
+										gte: new Date(1900, 1, 1),
+								  },
+					},
+					{
+						from:
+							fromDate !== undefined
+								? {
+										gte: fromDate,
+								  }
+								: {
+										gte: new Date(1900, 1, 1),
+								  },
+						to:
+							toDate !== undefined
+								? { lte: toDate }
+								: { lte: new Date(3000, 1, 1) },
+					},
+				],
+			},
+			select: {
+				employee: {
+					select: {
+						position: {
+							select: {
+								title: true,
+							},
+						},
+					},
+				},
+			},
+		});
+
+		return teamVacationRequestsCount.length;
+	} catch (error) {
+		console.error(error);
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+
+// Load employees Vacation Requests
+export const loadAgentsVacationRequests = async (
+	skip,
+	take,
+	departments,
+	from,
+	to,
+	employeeId,
+	approvalStatuses
+) => {
+	try {
+		let departmentsIds = await getDepartmentsIds(departments);
+
+		let fromDate = from === undefined || from === "" ? undefined : from;
+		let toDate = to === undefined || to === "" ? undefined : to;
+
+		// Check if fromDate and toDate are valid dates
+		if (fromDate) {
+			const parsedFromDate = new Date(fromDate);
+
+			if (!isNaN(parsedFromDate.getTime())) {
+				fromDate = parsedFromDate;
+			} else {
+				fromDate = undefined;
+			}
+		}
+
+		if (toDate) {
+			const parsedToDate = new Date(toDate);
+			if (!isNaN(parsedToDate.getTime())) {
+				toDate = parsedToDate;
+			} else {
+				toDate = undefined;
+			}
+		}
+
+		let vacationRequests = await prisma.vacationRequest.findMany({
+			where: {
+				employee: {
+					departmentId:
+						departmentsIds.length > 0 ? { in: departmentsIds } : undefined,
+					position: { title: "representative" },
+					employeeId: employeeId?.toLowerCase().trim() || undefined,
+				},
+				approvalStatus:
+					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
+
+				OR: [
+					{
+						from:
+							toDate !== undefined
+								? {
+										lte: toDate,
+								  }
+								: {
+										lte: new Date(3000, 1, 1),
+								  },
+						to:
+							fromDate !== undefined
+								? {
+										gte: fromDate,
+								  }
+								: {
+										gte: new Date(1900, 1, 1),
+								  },
+					},
+					{
+						from:
+							fromDate !== undefined
+								? {
+										gte: fromDate,
+								  }
+								: {
+										gte: new Date(1900, 1, 1),
+								  },
+						to:
+							toDate !== undefined
+								? { lte: toDate }
+								: { lte: new Date(3000, 1, 1) },
+					},
+				],
+			},
+			select: {
+				id: true,
+				createdAt: true,
+				employee: {
+					select: {
+						employeeId: true,
+						firstName: true,
+						lastName: true,
+					},
+				},
+				reason: true,
+				from: true,
+				to: true,
+				approvalStatus: true,
+				approvedByManager: {
+					select: {
+						employeeId: true,
+						firstName: true,
+						lastName: true,
+					},
+				},
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+			skip,
+			take,
+		});
+
+		return vacationRequests;
+	} catch (error) {
+		console.error(error);
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+
+// export vacation requests
+
+export const exportAgentsVacationRequests = async (
+	departments,
+	from,
+	to,
+	employeeId,
+	approvalStatuses
+) => {
+	try {
+		let departmentsIds = await getDepartmentsIds(departments);
+
+		let fromDate = from === undefined || from === "" ? undefined : from;
+		let toDate = to === undefined || to === "" ? undefined : to;
+
+		// Check if fromDate and toDate are valid dates
+		if (fromDate) {
+			const parsedFromDate = new Date(fromDate);
+
+			if (!isNaN(parsedFromDate.getTime())) {
+				fromDate = parsedFromDate;
+			} else {
+				fromDate = undefined;
+			}
+		}
+
+		if (toDate) {
+			const parsedToDate = new Date(toDate);
+			if (!isNaN(parsedToDate.getTime())) {
+				toDate = parsedToDate;
+			} else {
+				toDate = undefined;
+			}
+		}
+
+		let vacationRequests = await prisma.vacationRequest.findMany({
+			where: {
+				employee: {
+					departmentId:
+						departmentsIds.length > 0 ? { in: departmentsIds } : undefined,
+					position: { title: "representative" },
+					employeeId: employeeId?.toLowerCase().trim() || undefined,
+				},
+				approvalStatus:
+					approvalStatuses.length > 0 ? { in: approvalStatuses } : undefined,
+
+				OR: [
+					{
+						from:
+							toDate !== undefined
+								? {
+										lte: toDate,
+								  }
+								: {
+										lte: new Date(3000, 1, 1),
+								  },
+						to:
+							fromDate !== undefined
+								? {
+										gte: fromDate,
+								  }
+								: {
+										gte: new Date(1900, 1, 1),
+								  },
+					},
+					{
+						from:
+							fromDate !== undefined
+								? {
+										gte: fromDate,
+								  }
+								: {
+										gte: new Date(1900, 1, 1),
+								  },
+						to:
+							toDate !== undefined
+								? { lte: toDate }
+								: { lte: new Date(3000, 1, 1) },
+					},
+				],
+			},
+			select: {
+				id: true,
+				createdAt: true,
+				employee: {
+					select: {
+						employeeId: true,
+						firstName: true,
+						lastName: true,
+					},
+				},
+				reason: true,
+				from: true,
+				to: true,
+				approvalStatus: true,
+				approvedByManager: {
+					select: {
+						employeeId: true,
+						firstName: true,
+						lastName: true,
+					},
+				},
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+		});
+
+		return vacationRequests;
+	} catch (error) {
+		console.error(error);
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+
+const getDepartmentId = async (departmentName) => {
+	let department = await prisma.department.findFirst({
+		where: { name: departmentName },
+	});
+
+	return department.id;
+};
+const getDepartmentsIds = async (departments) => {
+	const departmentIds = await Promise.all(departments.map(getDepartmentId));
+	return departmentIds;
 };
