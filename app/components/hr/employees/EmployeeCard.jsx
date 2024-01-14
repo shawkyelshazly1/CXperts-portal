@@ -1,6 +1,5 @@
 import Image from "next/image";
 import S from "underscore.string";
-
 export default function EmployeeCard({ employee, openModal }) {
 	return (
 		<div

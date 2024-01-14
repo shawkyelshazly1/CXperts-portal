@@ -7,6 +7,7 @@ import EmployeeCard from "./EmployeeCard";
 import EmployeeView from "./EmployeeView";
 import EmployeeDocuments from "./EmployeeDocuments";
 import { FaUserEdit } from "react-icons/fa";
+import EmployeeEditModal from "./EmployeeEditModal";
 
 const Transition = forwardRef(function Transition(props, ref) {
 	return <Slide direction="up" ref={ref} {...props} />;
@@ -14,8 +15,6 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 export default function EmployeeModal({ employee }) {
 	const [open, setOpen] = useState(false);
-
-	console.log(employee);
 
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -29,9 +28,7 @@ export default function EmployeeModal({ employee }) {
 		<div>
 			<div className="relative group">
 				<EmployeeCard employee={employee} openModal={handleClickOpen} />
-				<div className="absolute h-full bg-green-300 top-0 right-0 rounded-r-3xl justify-center items-center flex px-4 text-white cursor-pointer opacity-0 group-hover:opacity-100">
-					<FaUserEdit size={30} />
-				</div>
+				<EmployeeEditModal employee={employee} />
 			</div>
 
 			<Dialog

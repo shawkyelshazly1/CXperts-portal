@@ -1,5 +1,8 @@
 import prisma from "@/prisma/index";
 import exportFromJSON from "export-from-json";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "app/util/firebase";
+import moment from "moment";
 
 // find employees
 export const searchEmployees = async (searchParams) => {
@@ -67,7 +70,6 @@ export const searchEmployees = async (searchParams) => {
 						},
 					},
 				},
-				
 			},
 		});
 
@@ -166,4 +168,116 @@ const ensureArray = (data) => {
 	} else {
 		return []; // Return an empty array for null or undefined
 	}
+};
+
+export const updateEmployee = async (employeeId, employeeInfo, documents) => {
+	try {
+		// check if employee exists with same employeeId
+		if (employeeInfo?.employeeId) {
+			const existingEmployee = await prisma.employee.findUnique({
+				where: { employeeId },
+			});
+			if (existingEmployee) {
+				throw new Error("Employee already exists with same employeeId");
+			}
+		}
+
+		// check if employee exists with same email
+		if (employeeInfo?.email) {
+			const existingEmployee = await prisma.employee.findUnique({
+				where: { email: employeeInfo.email },
+			});
+			if (existingEmployee) {
+				throw new Error("Employee already exists with same email");
+			}
+		}
+
+		let uploads = {};
+
+		// upload documents
+		if (documents) {
+			for (const document of documents) {
+				await uploadEmployeeDocument(
+					document.file,
+					employeeId,
+					document.documentName
+				).then((result) => {
+					if (result.error) {
+						throw new Error(result.error);
+					}
+
+					let obj = {
+						[document.documentName]: result,
+					};
+
+					uploads = {
+						...uploads,
+						...obj,
+					};
+				});
+			}
+
+			const updatedEmployee = await prisma.employee.update({
+				where: { employeeId: employeeId },
+				data: {
+					...employeeInfo,
+				},
+			});
+
+			const updateDocuments = await prisma.employeeDocuments.update({
+				where: {
+					employeeId: employeeId,
+				},
+				data: { ...uploads },
+				select: {
+					employeeId: true,
+				},
+			});
+
+			return updatedEmployee;
+		} else {
+			const updatedEmployee = await prisma.employee.update({
+				where: { employeeId: employeeId },
+				data: {
+					...employeeInfo,
+				},
+			});
+
+			return updatedEmployee;
+		}
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	}
+};
+
+export const uploadEmployeeDocument = async (
+	file,
+	employeeId,
+	documentName
+) => {
+	return new Promise(async (resolve, reject) => {
+		if (!file) {
+			reject(new Error("No file provided"));
+			return;
+		}
+		const imageName = `${documentName}-${employeeId}-${moment().format(
+			"MM-DD-YYYY"
+		)}-${Math.floor(Math.random() * 100)}`;
+		const imageRef = ref(storage, `documents/${imageName}`);
+
+		try {
+			const snapshot = await uploadBytes(imageRef, file);
+			const url = await getDownloadURL(snapshot.ref);
+			if (url) {
+				console.log(url);
+				resolve(url);
+			} else {
+				reject(new Error("Failed to get download URL"));
+			}
+		} catch (error) {
+			console.error("Error uploading or getting download URL:", error);
+			reject(error);
+		}
+	});
 };

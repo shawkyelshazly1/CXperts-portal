@@ -1,6 +1,4 @@
 import moment from "moment";
-import React from "react";
-import S from "underscore.string";
 
 export default function DateDetailsCard({ title, value }) {
 	return (
