@@ -33,33 +33,35 @@ model LoginDetails {
 }
 
 model Employee {
-  id               Int                @id @default(autoincrement())
-  email            String             @unique
-  firstName        String
-  employeeId       String             @unique
-  middleName       String?
-  lastName         String
-  hiringDate       DateTime           @default(now())
-  nationalId       String?
-  nationality      String?
-  resignationDate  DateTime?
-  phoneNumber      String?
-  birthDate        DateTime?
-  department       Department         @relation("DepartmentEmployees", fields: [departmentId], references: [id])
-  departmentId     Int
-  project          Department?        @relation("SubDepartmentEmployees", fields: [projectId], references: [id])
-  projectId        Int?
-  positionId       Int
-  position         Position           @relation(fields: [positionId], references: [id])
-  manager          Employee?          @relation("ManagerEmployees", fields: [managerId], references: [employeeId])
-  managerId        String?
-  subordinates     Employee[]         @relation("ManagerEmployees")
-  vacationBalance  Int                @default(21)
-  VacationRequest  VacationRequest[]
-  approvedRequests VacationRequest[]  @relation("approvedByManager")
-  LoginDetails     LoginDetails?
-  documents        EmployeeDocuments?
-  accountStatus    String             @default("active")
+  id                   Int                @id @default(autoincrement())
+  email                String             @unique
+  firstName            String
+  employeeId           String             @unique
+  middleName           String?
+  lastName             String
+  hiringDate           DateTime           @default(now())
+  nationalId           String?
+  nationality          String?
+  resignationDate      DateTime?
+  phoneNumber          String?
+  birthDate            DateTime?
+  department           Department         @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+  departmentId         Int
+  project              Department?        @relation("SubDepartmentEmployees", fields: [projectId], references: [id])
+  projectId            Int?
+  positionId           Int
+  position             Position           @relation(fields: [positionId], references: [id])
+  manager              Employee?          @relation("ManagerEmployees", fields: [managerId], references: [employeeId])
+  managerId            String?
+  subordinates         Employee[]         @relation("ManagerEmployees")
+  vacationBalance      Int                @default(21)
+  VacationRequest      VacationRequest[]
+  approvedRequests     VacationRequest[]  @relation("approvedByManager")
+  LoginDetails         LoginDetails?
+  documents            EmployeeDocuments?
+  accountStatus        String             @default("active")
+  resignations         Resignation[]
+  assignedResignations Resignation[]      @relation("assignedHr")
 }
 
 model EmployeeDocuments {
@@ -98,6 +100,20 @@ model VacationRequest {
   approvedBy        String?
   approvedByManager Employee?             @relation("approvedByManager", fields: [approvedBy], references: [employeeId])
   document          String?
+}
+
+model Resignation {
+  id              Int       @id @default(autoincrement())
+  employee        Employee  @relation(fields: [employeeId], references: [employeeId])
+  employeeId      String
+  reason          String?
+  status          String?   @default("pending")
+  comment         String?
+  resolution      String?
+  lastWorkingDate DateTime
+  hrAssigned      Employee? @relation("assignedHr", fields: [hrAssignedId], references: [employeeId])
+  hrAssignedId    String?
+  submissionDate  DateTime  @default(now())
 }
 
 enum VacationRequestStatus {

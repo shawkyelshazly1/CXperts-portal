@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Resignation" ADD COLUMN     "submissionDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

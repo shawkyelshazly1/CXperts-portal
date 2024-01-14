@@ -24,7 +24,7 @@ import Image from "next/image";
 import WFMMenu from "./WFMMenu";
 
 const pages = ["home", "vacation"];
-const settings = ["profile", "reset_password", "Logout"];
+const settings = ["profile", "submit_resignation", "reset_password", "Logout"];
 
 export default function Header() {
 	const pathname = usePathname();

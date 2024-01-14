@@ -51,3 +51,74 @@ export const resetUserPassword = async (data) => {
 		await prisma.$disconnect();
 	}
 };
+
+export const submitResignation = async (employeeId, data) => {
+	try {
+		let existingUser = await prisma.employee.findUnique({
+			where: {
+				employeeId: employeeId,
+			},
+		});
+
+		if (!existingUser) {
+			throw new Error("Employee not found!");
+		}
+
+		let resignation = await prisma.resignation.create({
+			data: {
+				employeeId: employeeId,
+				lastWorkingDate: new Date(data.lastWorkingDate),
+				reason: data.reason,
+				comment: data.comment,
+			},
+		});
+
+		return resignation;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	}
+};
+
+export const getUserResignation = async (employeeId) => {
+	try {
+		let resignation = await prisma.resignation.findFirst({
+			where: {
+				employeeId: employeeId,
+				status: { not: "recalled" },
+			},
+			select: {
+				lastWorkingDate: true,
+				reason: true,
+				comment: true,
+				status: true,
+				submissionDate: true,
+				id: true,
+			},
+		});
+
+		return resignation;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	}
+};
+
+export const recallResignation = async (resignationId, employeeId) => {
+	try {
+		let resignation = await prisma.resignation.update({
+			where: {
+				employeeId: employeeId,
+				id: parseInt(resignationId),
+			},
+			data: {
+				status: "recalled",
+			},
+		});
+
+		return resignation;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	}
+};
