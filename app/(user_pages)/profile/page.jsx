@@ -6,6 +6,7 @@ import React from "react";
 import S from "underscore.string";
 import prisma from "../../../prisma";
 import EmployeeCard from "@/components/profile/Employee Card";
+import SubordinateCard from "@/components/profile/SubordinateCard";
 export default async function Page() {
 	const { user } = await getServerSession(authOptions);
 
@@ -18,6 +19,7 @@ export default async function Page() {
 					lastName: true,
 					position: true,
 					department: true,
+					employeeId: true,
 				},
 			},
 		},
@@ -26,7 +28,8 @@ export default async function Page() {
 	subordinates = subordinates.subordinates;
 
 	return (
-		<div className="w-full h-full container grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-20  py-6">
+		<div className="w-full h-full container grid grid-cols-1  xl:grid-cols-4 gap-8 md:gap-20  py-6 px-6">
+			{" "}
 			<div className="flex flex-col">
 				{" "}
 				<Image
@@ -77,13 +80,13 @@ export default async function Page() {
 					/>
 				</div>
 			</div>
-			<div className="flex flex-col">
-				<div className="flex flex-col gap-4">
+			<div className="flex flex-col col-span-1 xl:col-span-2 gap-4">
+				<h1 className="font-medium text-xl text-slate-400">Team</h1>
+				<div className="grid grid-cols-2 gap-4 ">
 					{subordinates.length > 0 ? (
 						<>
-							<h1 className="font-medium text-xl text-slate-400">Team</h1>
 							{subordinates?.map((subordinate) => (
-								<EmployeeCard
+								<SubordinateCard
 									employee={subordinate}
 									key={subordinate.employeeId}
 								/>

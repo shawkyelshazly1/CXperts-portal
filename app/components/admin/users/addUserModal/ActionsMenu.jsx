@@ -91,30 +91,9 @@ export default function ActionsMenu({ userId, userStatus }) {
 				open={open}
 				onClose={handleClose}
 			>
-				<MenuItem
-					onClick={() => {
-						console.log("view user profile, userId: ", userId);
-						handleClose();
-					}}
-					disableRipple
-				>
-					<ContactPageIcon />
-					View
-				</MenuItem>
-				<MenuItem
-					onClick={() => {
-						console.log("Edit user profile, userId: ", userId);
-						handleClose();
-					}}
-					disableRipple
-				>
-					<EditIcon />
-					Edit
-				</MenuItem>
+				
+				
 
-				{/* below only shows if IT */}
-
-				<Divider sx={{ my: 0.5 }} />
 
 				<ResetPasswordModal userId={userId} closeMenu={handleClose} />
 				<UserStatusActionButton

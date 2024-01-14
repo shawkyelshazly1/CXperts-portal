@@ -10,9 +10,9 @@ export async function POST(req) {
 		return new Response("Not Authorized", { status: 401 });
 	}
 
-	// if (token.user?.department?.name !== "human_resources") {
-	// 	return new Response("Not Authorized", { status: 401 });
-	// }
+	if (token.user?.department?.name !== "human_resources") {
+		return new Response("Not Authorized", { status: 401 });
+	}
 
 	let formData = await req.formData();
 
