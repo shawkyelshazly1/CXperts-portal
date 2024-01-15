@@ -1,6 +1,7 @@
 import moment from "moment";
 import S from "underscore.string";
 import RecallResignationButton from "./RecallResignationButton";
+import ExtendLastWorkingDateModal from "./adjust date modal/ExtendLastWorkingDateModal";
 
 export default function ResignationView({ resignation }) {
 	return (
@@ -79,9 +80,7 @@ export default function ResignationView({ resignation }) {
 						</h1>
 						<div className="py-2 px-4 h-full flex items-center justify-center flex-col gap-2 ">
 							<RecallResignationButton resignation={resignation} />
-							<button className="bg-purple-500 text-white py-2 px-6 rounded-lg font-medium ">
-								Extend Last Working Date
-							</button>
+							<ExtendLastWorkingDateModal resignation={resignation} />
 						</div>
 					</div>
 				</div>

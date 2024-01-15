@@ -94,6 +94,16 @@ export const getUserResignation = async (employeeId) => {
 				status: true,
 				submissionDate: true,
 				id: true,
+				employee: {
+					select: {
+						employeeId: true,
+						position: {
+							select: {
+								title: true,
+							},
+						},
+					},
+				},
 			},
 		});
 
@@ -117,6 +127,55 @@ export const recallResignation = async (resignationId, employeeId) => {
 		});
 
 		return resignation;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	}
+};
+
+export const updateResignationLastWorkingDate = async (
+	resignationId,
+	employeeId,
+	updatedLastWorkingDate
+) => {
+	const user = await prisma.employee.findUnique({
+		where: {
+			employeeId: employeeId,
+		},
+		include: {
+			position: true,
+		},
+	});
+
+	if (!user) {
+		throw new Error("User not found");
+	}
+
+	const positionTitle = user?.position?.title;
+	const today = new Date();
+	const requiredDaysAhead = positionTitle === "representative" ? 14 : 30;
+	const requiredDate = new Date(today);
+	requiredDate.setDate(today.getDate() + requiredDaysAhead);
+
+	if (new Date(updatedLastWorkingDate) < requiredDate) {
+		throw new Error(
+			`Last working date must be at least ${requiredDaysAhead} days from today.`
+		);
+	}
+
+	try {
+		let updatedResignation = await prisma.resignation.update({
+			where: {
+				employeeId: employeeId,
+				id: resignationId,
+				reason: { notIn: ["recalled", "completed"] },
+			},
+			data: {
+				lastWorkingDate: new Date(updatedLastWorkingDate),
+			},
+		});
+
+		return updatedResignation;
 	} catch (error) {
 		console.error(error);
 		return { error: error.message };

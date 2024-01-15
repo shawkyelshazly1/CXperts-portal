@@ -72,8 +72,17 @@ export default function ResignationForm() {
 				.then((data) => {
 					if (data.error) {
 						throw new Error(data.error);
+					} else {
+						toast.promise(
+							sendHRNotificationEmail("shawkyelshazly2@gmail.com", data),
+							{
+								loading: "Sending HR Notification email...",
+								success: "HR Notification email sent successfully!",
+								error: "Failed to send HR Notification email.",
+							}
+						);
+						setTimeout(() => window.location.reload(), 2000);
 					}
-					setTimeout(() => window.location.reload(), 2000);
 				}),
 			{
 				loading: "Submitting resignation...",
@@ -81,6 +90,31 @@ export default function ResignationForm() {
 				error: "Failed to submit resignation.",
 			}
 		);
+	};
+
+	//Send hr notification email
+	const sendHRNotificationEmail = async (email, resignation) => {
+		// send api request to send welcome emails to new employees
+		await fetch("/api/user/resignation/send_hr_notificaiton_email", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				email: email,
+				employee: userData?.user,
+				resignation,
+			}),
+		})
+			.then(async (res) => {
+				if (!res.ok) {
+					throw new Error("Failed to send HR Notification email.");
+				}
+				return await res.json();
+			})
+			.catch((error) => {
+				toast.error(error.message);
+			});
 	};
 
 	return (
