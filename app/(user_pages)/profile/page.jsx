@@ -7,6 +7,7 @@ import S from "underscore.string";
 import prisma from "../../../prisma";
 import EmployeeCard from "@/components/profile/Employee Card";
 import SubordinateCard from "@/components/profile/SubordinateCard";
+import DateDetailsCard from "@/components/hr/employees/DateDetailsCard";
 export default async function Page() {
 	const { user } = await getServerSession(authOptions);
 
@@ -44,7 +45,8 @@ export default async function Page() {
 						Employee Details
 					</h1>
 					<DetailsCard title={"First Name"} value={user.firstName} />
-					<DetailsCard title={"Last Name"} value={user.lastName} />
+					<DetailsCard title={"Last Name"} value={user.lastName} />{" "}
+					<DetailsCard title={"EmployeeId"} value={user.employeeId} />
 					<DetailsCard title={"Email Address"} value={user.email} />
 					{user.manager ? (
 						<DetailsCard
@@ -58,7 +60,6 @@ export default async function Page() {
 					) : (
 						<></>
 					)}
-
 					<DetailsCard
 						title={"Position"}
 						value={user.position.title
@@ -75,6 +76,43 @@ export default async function Page() {
 						title={"Department"}
 						value={user.department.name
 							.split("_")
+							.map((word) => S(word).capitalize().value())
+							.join(" ")}
+					/>
+					{user.project && (
+						<DetailsCard
+							title={"Project"}
+							value={user.project?.name
+								.split("_")
+								.map((word) => S(word).capitalize().value())
+								.join(" ")}
+						/>
+					)}
+				</div>
+				<div className="flex flex-col gap-4">
+					<h1 className="font-medium text-xl text-slate-400">
+						Employee Information
+					</h1>
+					<DateDetailsCard title={"Date Of Birth"} value={user.dateOfBirth} />
+					<DateDetailsCard title={"Hiring Date"} value={user.hiringDate} />
+					<DetailsCard
+						title={"Phone Number"}
+						value={user.phoneNumber
+							?.split("_")
+							.map((word) => S(word).capitalize().value())
+							.join(" ")}
+					/>
+					<DetailsCard
+						title={"Nationality"}
+						value={user.nationality
+							?.split("_")
+							.map((word) => S(word).capitalize().value())
+							.join(" ")}
+					/>
+					<DetailsCard
+						title={"National ID"}
+						value={user.nationalId
+							?.split("_")
 							.map((word) => S(word).capitalize().value())
 							.join(" ")}
 					/>
