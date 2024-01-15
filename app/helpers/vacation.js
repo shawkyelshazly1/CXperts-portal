@@ -105,7 +105,10 @@ export const submitVacationRequest = async (vacationData, userId) => {
 		}
 
 		if (vacationData.reason !== "casual") {
-			if (vacationData.reason === "annual" && employee.vacationBalance < days) {
+			if (
+				vacationData.reason === "annual" &&
+				employee.vacationBalance - 6 < days
+			) {
 				throw new Error("Insufficient Balance!");
 			}
 		} else {
