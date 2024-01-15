@@ -109,7 +109,7 @@ export default function VacationRequestsTable() {
 	const [requestsCount, setRequestsCount] = useState(0);
 	const [paginationModel, setPaginationModel] = useState({
 		page: 0,
-		pageSize: 10,
+		pageSize: 5,
 	});
 
 	// load the requests count
@@ -171,7 +171,7 @@ export default function VacationRequestsTable() {
 				pagination
 				paginationMode="server"
 				onPaginationModelChange={setPaginationModel}
-				pageSizeOptions={[10]}
+				pageSizeOptions={[5]}
 				rowCount={requestsCount}
 				loading={loading}
 			/>

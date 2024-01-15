@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import React from "react";
 
-const pages = ["employees", "vacations", "layoffs"];
+const pages = ["employees", "vacations", "resignations"];
 
 export default function HRMenu() {
 	const { data } = useSession();

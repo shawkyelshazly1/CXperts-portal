@@ -23,7 +23,7 @@ export default function EmployeesVacationRequestsTable() {
 	const [requestsCount, setRequestsCount] = useState(0);
 	const [paginationModel, setPaginationModel] = useState({
 		page: 0,
-		pageSize: 10,
+		pageSize: 5,
 	});
 
 	const searchParams = useSearchParams();
@@ -262,7 +262,7 @@ export default function EmployeesVacationRequestsTable() {
 				pagination
 				paginationMode="server"
 				onPaginationModelChange={setPaginationModel}
-				pageSizeOptions={[10]}
+				pageSizeOptions={[5]}
 				rowCount={requestsCount}
 				loading={loading}
 			/>

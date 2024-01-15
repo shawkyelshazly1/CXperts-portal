@@ -112,7 +112,7 @@ export default function ResignationSubmittedHRNotificaiton({
 									pX={20}
 									pY={12}
 									className="bg-[#ecca49] rounded text-[#4264f0] text-[12px] text-2xl py-2 px-4 font-semibold no-underline text-center"
-									href={`${baseUrl}/hr/resignations/review`}
+									href={`${baseUrl}/hr/resignations`}
 								>
 									View Resignation Requests
 								</Button>

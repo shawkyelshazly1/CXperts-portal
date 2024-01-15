@@ -14,7 +14,7 @@ export default function SickVacationRequestsTable() {
 	const [requestsCount, setRequestsCount] = useState(0);
 	const [paginationModel, setPaginationModel] = useState({
 		page: 0,
-		pageSize: 10,
+		pageSize: 5,
 	});
 
 	// columns for the table
@@ -290,7 +290,7 @@ export default function SickVacationRequestsTable() {
 				pagination
 				paginationMode="server"
 				onPaginationModelChange={setPaginationModel}
-				pageSizeOptions={[10]}
+				pageSizeOptions={[5]}
 				rowCount={requestsCount}
 				loading={loading}
 			/>
