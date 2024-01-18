@@ -1,15 +1,9 @@
-import EmployeesSection from "@/components/hr/employees/EmployeesSection";
-import ExtractModal from "@/components/hr/employees/ExtractModal";
-import DepartmentFilter from "@/components/hr/employees/filters/DepartmentFilter";
-import PositionFilter from "@/components/hr/employees/filters/PositionFilter";
-import SearchBar from "@/components/hr/employees/filters/SearchBar";
 import ClearFiltersButton from "@/components/hr/resignations/ClearFiltersButton";
 import EmployeesResignations from "@/components/hr/resignations/EmployeesResignations";
+import EmployeesResignationsRequests from "@/components/hr/resignations/EmployeesResignationsRequests";
 import ExportResignationsButton from "@/components/hr/resignations/ExportResignationsButton";
 import FilterPane from "@/components/hr/resignations/FilterPane";
 import { loadFilters } from "@/helpers/hr/employee";
-import { Suspense } from "react";
-import { ClipLoader } from "react-spinners";
 
 export default async function Page({ searchParams }) {
 	let filters = await loadFilters();
@@ -29,6 +23,7 @@ export default async function Page({ searchParams }) {
 				</div>
 
 				<EmployeesResignations />
+				<EmployeesResignationsRequests />
 			</div>
 		</div>
 	);

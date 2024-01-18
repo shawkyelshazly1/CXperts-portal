@@ -60,13 +60,13 @@ export default function ResignationView({ resignation }) {
 							<h1
 								className={`py-2 px-4  inline-flex rounded-3xl font-medium text-white w-fit self-center ${
 									resignation?.status === "pending"
-										? "bg-amber-500 "
+										? "bg-amber-500"
 										: resignation?.status === "processing"
-										? "bg-purple-500 "
+										? "bg-purple-500"
 										: resignation?.status === "recalled"
-										? "bg-green-500 "
+										? "bg-green-500"
 										: resignation?.status === "completed"
-										? "bg-red-500 "
+										? "bg-red-500"
 										: ""
 								}`}
 							>

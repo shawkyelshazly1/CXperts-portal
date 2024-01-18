@@ -73,14 +73,11 @@ export default function ResignationForm() {
 					if (data.error) {
 						throw new Error(data.error);
 					} else {
-						toast.promise(
-							sendHRNotificationEmail("shawkyelshazly2@gmail.com", data),
-							{
-								loading: "Sending HR Notification email...",
-								success: "HR Notification email sent successfully!",
-								error: "Failed to send HR Notification email.",
-							}
-						);
+						toast.promise(sendHRNotificationEmail(process.env.HR_EMAIL, data), {
+							loading: "Sending HR Notification email...",
+							success: "HR Notification email sent successfully!",
+							error: "Failed to send HR Notification email.",
+						});
 						setTimeout(() => window.location.reload(), 2000);
 					}
 				}),

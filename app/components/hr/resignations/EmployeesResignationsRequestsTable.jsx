@@ -8,61 +8,16 @@ import { ClipLoader } from "react-spinners";
 import S from "underscore.string";
 import _ from "lodash";
 import { usePathname, useSearchParams } from "next/navigation";
-import ResignationDetailsView from "./view resignation/ResignationDetailsView";
 import ViewResignationModal from "./view resignation/ViewResignationModal";
 
-export default function EmployeesResignationsTable() {
+export default function EmployeesResignationsRequestsTable() {
 	const [requests, setRequests] = useState([]);
-	const [departments, setDepartments] = useState([]);
-	const [positions, setPositions] = useState([]);
-	const [resignationStatuses, setResignationStatuses] = useState([]);
-	const [employeeId, setEmployeeId] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [requestsCount, setRequestsCount] = useState(0);
 	const [paginationModel, setPaginationModel] = useState({
 		page: 0,
-		pageSize: 5,
+		pageSize: 8,
 	});
-
-	const searchParams = useSearchParams();
-
-	useEffect(() => {
-		// Only run this code on the client-side
-
-		if (typeof window === "undefined") {
-			return;
-		}
-
-		const urlSearchParams = new URLSearchParams(window.location.search);
-
-		const paramsDepartments =
-			urlSearchParams.get("department")?.split(",") || [];
-
-		const paramsPositions = urlSearchParams.get("position")?.split(",") || [];
-		const paramsResignationStatuses =
-			urlSearchParams.get("resignationStatus")?.split(",") || [];
-
-		const paramsEmployeeId = urlSearchParams.get("employeeId") || "";
-
-		if (!_.isEqual(departments, paramsDepartments)) {
-			setDepartments(urlSearchParams?.get("department")?.split(",") || []);
-		}
-		if (!_.isEqual(resignationStatuses, paramsResignationStatuses)) {
-			setResignationStatuses(
-				urlSearchParams?.get("resignationStatus")?.split(",") || []
-			);
-		}
-
-		if (!_.isEqual(positions, paramsPositions)) {
-			setPositions(urlSearchParams?.get("position")?.split(",") || []);
-		}
-
-		if (!_.isEqual(employeeId, paramsEmployeeId)) {
-			setEmployeeId(urlSearchParams?.get("employeeId") || "");
-		}
-
-		// Now, we use the setDepartments state updater function
-	}, [searchParams]);
 
 	// columns for the table
 	const columns = [
@@ -100,11 +55,19 @@ export default function EmployeesResignationsTable() {
 			headerName: "Employee Name",
 			width: 200,
 			valueGetter: (params) =>
-				`${S(params.row.employee.firstName).capitalize().value()} ${S(
-					params.row.employee.lastName
-				)
-					.capitalize()
-					.value()}`,
+				`${params.row.employee.firstName} ${params.row.employee.lastName}`,
+			align: "center",
+			headerAlign: "center",
+		},
+		{
+			field: "department",
+			headerName: "Department",
+			width: 200,
+			valueGetter: (params) =>
+				params.row.employee.department.name
+					.split("_")
+					.map((word) => S(word).capitalize().value())
+					.join(" "),
 			align: "center",
 			headerAlign: "center",
 		},
@@ -142,24 +105,6 @@ export default function EmployeesResignationsTable() {
 			headerAlign: "center",
 		},
 		{
-			field: "hrAssigned",
-			headerName: "Assigned To",
-			width: 170,
-			valueGetter: (params) => {
-				if (params.row.hrAssigned) {
-					return `${S(params.row.hrAssigned.firstName)
-						.capitalize()
-						.value()} ${S(params.row.hrAssigned.lastName)
-						.capitalize()
-						.value()}`;
-				} else {
-					return "-";
-				}
-			},
-			align: "center",
-			headerAlign: "center",
-		},
-		{
 			field: "status",
 			headerName: "Resignation Status",
 			width: 150,
@@ -168,10 +113,10 @@ export default function EmployeesResignationsTable() {
 			renderCell: (params) => {
 				return (
 					<span
-						className={`text-white text-center text-base py-1 px-3 rounded-full font-semibold capitalize w-fit ${
+						className={`text-white text-center text-base py-1 px-3 rounded-full font-semibold capitalize w-24  ${
 							params.value === "pending"
 								? "bg-amber-500"
-								: params.value === "processing"
+								: params.values === "processing"
 								? "bg-purple-500"
 								: params.value === "recalled"
 								? "bg-green-500"
@@ -185,10 +130,9 @@ export default function EmployeesResignationsTable() {
 				);
 			},
 		},
-
 		{
-			field: "view",
-			headerName: "View",
+			field: "actions",
+			headerName: "Actions",
 			width: 150,
 			align: "center",
 			headerAlign: "center",
@@ -200,17 +144,8 @@ export default function EmployeesResignationsTable() {
 
 	// load the requests count
 	useEffect(() => {
-		async function loadProjectVacationRequestsCount() {
-			await fetch(
-				`/api/hr/resignation/load/all/count?department=${departments.join(
-					","
-				)}&position=${positions.join(
-					","
-				)}&employeeId=${employeeId}&resignationStatus=${resignationStatuses.join(
-					","
-				)}`,
-				{ method: "GET" }
-			)
+		async function loadPendingResignationsCount() {
+			await fetch(`/api/hr/resignation/load/pending/count`, { method: "GET" })
 				.then(async (res) => {
 					return await res.json();
 				})
@@ -223,26 +158,20 @@ export default function EmployeesResignationsTable() {
 		}
 
 		// calling functions
-		loadProjectVacationRequestsCount();
+		loadPendingResignationsCount();
 		return () => {
 			setRequestsCount(0);
 		};
-	}, [departments, positions, employeeId, resignationStatuses]);
+	}, []);
 
 	// load requests
 	useEffect(() => {
-		async function loadProjectRequests() {
+		async function loadPendingResignations() {
 			setLoading(true);
 			await fetch(
-				`/api/hr/resignation/load/all?skip=${
+				`/api/hr/resignation/load/pending?skip=${
 					paginationModel.page * paginationModel.pageSize
-				}&take=${paginationModel.pageSize}&department=${departments.join(
-					","
-				)}&position=${positions.join(
-					","
-				)}&employeeId=${employeeId}&resignationStatus=${resignationStatuses.join(
-					","
-				)}`,
+				}&take=${paginationModel.pageSize}`,
 				{ method: "GET" }
 			)
 				.then(async (res) => {
@@ -258,18 +187,12 @@ export default function EmployeesResignationsTable() {
 		}
 
 		// calling functions
-		loadProjectRequests();
+		loadPendingResignations();
 
 		return () => {
 			setRequests([]);
 		};
-	}, [
-		paginationModel.page,
-		departments,
-		positions,
-		employeeId,
-		resignationStatuses,
-	]);
+	}, [paginationModel.page]);
 
 	return (
 		<div className="w-full lg:w-fit max-h-full min-h-[200px] self-center text-center">
@@ -280,7 +203,7 @@ export default function EmployeesResignationsTable() {
 				pagination
 				paginationMode="server"
 				onPaginationModelChange={setPaginationModel}
-				pageSizeOptions={[5]}
+				pageSizeOptions={[8]}
 				rowCount={requestsCount}
 				loading={loading}
 			/>

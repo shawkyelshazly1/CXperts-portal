@@ -53,9 +53,9 @@
 		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
-		"@prisma/client": "^5.8.0",
+		"@prisma/client": "^5.8.1",
 		"prism": "^4.1.2",
-		"prisma": "^5.7.1",
+		"prisma": "^5.8.1",
 		"vercel": "^32.3.1"
 	}
 }
