@@ -305,9 +305,7 @@ export const loadResignation = async (resignationId) => {
 	try {
 		let resignation = await prisma.resignation.findFirst({
 			where: {
-				employee: {
-					id: parseInt(resignationId),
-				},
+				id: parseInt(resignationId),
 			},
 			select: {
 				id: true,
@@ -383,5 +381,65 @@ export const claimResignation = async (resignationId, hrId) => {
 	} catch (error) {
 		console.error(error);
 		return { error: error.message };
+	}
+};
+
+// Load employees resignations
+export const loadResignationFullDetails = async (resignationId) => {
+	try {
+		let resignation = await prisma.resignation.findFirst({
+			where: {
+				id: parseInt(resignationId),
+			},
+			select: {
+				id: true,
+				employee: {
+					select: {
+						employeeId: true,
+						firstName: true,
+						lastName: true,
+						email: true,
+						department: {
+							select: {
+								name: true,
+							},
+						},
+						position: {
+							select: {
+								title: true,
+							},
+						},
+						manager: {
+							select: {
+								firstName: true,
+								lastName: true,
+							},
+						},
+						hiringDate: true,
+						accountStatus: true,
+						phoneNumber: true,
+						project: true,
+					},
+				},
+				submissionDate: true,
+				lastWorkingDate: true,
+				status: true,
+				comment: true,
+				resolution: true,
+				hrAssigned: {
+					select: {
+						firstName: true,
+						lastName: true,
+					},
+				},
+				reason: true,
+			},
+		});
+
+		return resignation;
+	} catch (error) {
+		console.error(error);
+	} finally {
+		await prisma.$disconnect();
 	}
 };

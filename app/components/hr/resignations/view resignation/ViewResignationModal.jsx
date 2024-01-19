@@ -11,7 +11,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 });
 
 export default function ViewResignationModal({ resignationId }) {
-	const [open, setOpen] = useState(true);
+	const [open, setOpen] = useState(false);
 	const [resignation, setResignation] = useState(null);
 	const [loading, setLoading] = useState(false);
 

@@ -123,12 +123,6 @@ export default function ResignationDetailsView({ resignation }) {
 							{moment(resignation.lastWorkingDate).format("DD-MMM-YYYY")}
 						</dd>
 					</div>
-					<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-						<dt className=" font-medium text-gray-500">Comment</dt>
-						<dd className="mt-1  text-gray-900 sm:mt-0 sm:col-span-2">
-							{S(resignation.comment).truncate(50).value()}
-						</dd>
-					</div>
 
 					{resignation.hrAssigned && (
 						<>
@@ -139,12 +133,6 @@ export default function ResignationDetailsView({ resignation }) {
 									{S(resignation.hrAssigned.firstName).capitalize().value() +
 										" " +
 										S(resignation.hrAssigned.lastName).capitalize().value()}
-								</dd>
-							</div>
-							<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-								<dt className=" font-medium text-gray-500">Resolution</dt>
-								<dd className="mt-1  text-gray-900 sm:mt-0 sm:col-span-2">
-									{S(resignation.resolution).truncate(35).value()}
 								</dd>
 							</div>
 						</>
