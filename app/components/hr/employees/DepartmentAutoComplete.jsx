@@ -82,12 +82,12 @@ export default function DepartmentAutoComplete({ handleFieldChange }) {
 				className="w-full"
 				options={departments}
 				onChange={(e, value) => {
-					handleFieldChange({ name: "departmentId", value: value?.id || "" });
+					handleFieldChange("departmentId", value?.id || "");
 					setSelectedDepartment(value);
 				}}
 				sx={{ width: 300 }}
 				renderInput={(params) => (
-					<TextField {...params} label="Department" required />
+					<TextField {...params} label="Department" />
 				)}
 			/>
 			{subDepartments.length <= 0 ? (
@@ -99,7 +99,7 @@ export default function DepartmentAutoComplete({ handleFieldChange }) {
 					options={subDepartments}
 					className="w-full"
 					onChange={(e, value) => {
-						handleFieldChange({ name: "projectId", value: value?.id || "" });
+						handleFieldChange("projectId", value?.id || "");
 						setSelectedSubDepartment(value);
 					}}
 					sx={{ width: 300 }}

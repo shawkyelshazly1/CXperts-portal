@@ -589,3 +589,54 @@ export const loadResignationUpdates = async (resignationId) => {
 		await prisma.$disconnect();
 	}
 };
+
+export const closeResignation = async (hrId, data) => {
+	try {
+		// find resignation
+		const resignation = await prisma.resignation.findUnique({
+			where: {
+				id: parseInt(data.resignationId),
+			},
+		});
+
+		if (!resignation) {
+			throw new Error("Resignation not found.");
+		}
+
+		if (resignation.status !== "processing") {
+			throw new Error("Can't close resignation!");
+		}
+
+		let updatedResignation = await prisma.resignation.update({
+			where: {
+				id: parseInt(data.resignationId),
+			},
+			data: {
+				status: data.status,
+				resolution: data.resolution,
+			},
+		});
+
+		let update = await prisma.resignationResolution.create({
+			data: {
+				resignationId: parseInt(data.resignationId),
+				creatorId: hrId,
+				content: data.resolution,
+			},
+		});
+
+		let systemUpdate = await prisma.resignationResolution.create({
+			data: {
+				resignationId: resignation.id,
+				content: "System Generated: Employee Retained",
+			},
+		});
+
+		return updatedResignation;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	} finally {
+		await prisma.$disconnect();
+	}
+};

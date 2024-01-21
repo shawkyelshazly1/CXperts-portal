@@ -1,3 +1,4 @@
+import CloseResignationModal from "@/components/resingations/resignation details/close resignation/CloseResignationModal";
 import ResignationFullView from "@/components/resingations/resignation details/ResignationFullView";
 import { loadResignationFullDetails } from "@/helpers/hr/resignations";
 
@@ -35,6 +36,9 @@ export default async function Page({ params }) {
 							ID:#{resignation?.id}
 						</h1>
 					</div>
+					{resignation.status === "processing" && (
+						<CloseResignationModal resignationId={resignation.id} />
+					)}
 				</div>
 				<ResignationFullView resignation={resignation} />
 			</div>

@@ -148,7 +148,7 @@ export default function ResignationDetailsView({ resignation }) {
 						if (!resignation.hrAssigned && resignation.status === "pending") {
 							claimResignation(resignation.id);
 						} else {
-							window.location.href = `/hr/resignations/view/${resignation.id}`;
+							window.open(`/hr/resignations/view/${resignation.id}`, "_blank");
 						}
 					}}
 					type="button"
