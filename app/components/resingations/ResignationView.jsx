@@ -38,7 +38,10 @@ export default function ResignationView({ resignation }) {
 						</h1>
 						<div className="py-2 px-4 h-full flex items-center justify-center">
 							<p className="break-words">
-								{S(resignation?.comment).truncate(100).lines().join("<br />")}
+								{S(resignation?.updates[0].content)
+									.truncate(100)
+									.lines()
+									.join("<br />")}
 							</p>
 						</div>
 					</div>
@@ -63,7 +66,8 @@ export default function ResignationView({ resignation }) {
 										? "bg-amber-500"
 										: resignation?.status === "processing"
 										? "bg-purple-500"
-										: resignation?.status === "recalled"
+										: resignation?.status === "recalled" ||
+										  resignation?.status === "retained"
 										? "bg-green-500"
 										: resignation?.status === "completed"
 										? "bg-red-500"

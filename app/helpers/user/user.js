@@ -69,9 +69,18 @@ export const submitResignation = async (employeeId, data) => {
 				employeeId: employeeId,
 				lastWorkingDate: new Date(data.lastWorkingDate),
 				reason: data.reason,
-				comment: data.comment,
 			},
 		});
+
+		if (resignation) {
+			let employeeComment = await prisma.resignationResolution.create({
+				data: {
+					creatorId: employeeId,
+					resignationId: parseInt(resignation.id),
+					content: data.comment,
+				},
+			});
+		}
 
 		return resignation;
 	} catch (error) {
@@ -85,12 +94,11 @@ export const getUserResignation = async (employeeId) => {
 		let resignation = await prisma.resignation.findFirst({
 			where: {
 				employeeId: employeeId,
-				status: { not: "recalled" },
+				status: { notIn: ["retained", "recalled"] },
 			},
 			select: {
 				lastWorkingDate: true,
 				reason: true,
-				comment: true,
 				status: true,
 				submissionDate: true,
 				id: true,
@@ -102,6 +110,14 @@ export const getUserResignation = async (employeeId) => {
 								title: true,
 							},
 						},
+					},
+				},
+				updates: {
+					where: {
+						creatorId: employeeId,
+					},
+					select: {
+						content: true,
 					},
 				},
 			},
@@ -123,6 +139,14 @@ export const recallResignation = async (resignationId, employeeId) => {
 			},
 			data: {
 				status: "recalled",
+				resolution: "System Generated: Resignation recalled by employee",
+			},
+		});
+
+		let update = await prisma.resignationResolution.create({
+			data: {
+				resignationId: resignation.id,
+				content: "System Generated: Resignation recalled by employee",
 			},
 		});
 
@@ -168,7 +192,7 @@ export const updateResignationLastWorkingDate = async (
 			where: {
 				employeeId: employeeId,
 				id: resignationId,
-				reason: { notIn: ["recalled", "completed"] },
+				reason: { notIn: ["recalled", "completed", "retained"] },
 			},
 			data: {
 				lastWorkingDate: new Date(updatedLastWorkingDate),
