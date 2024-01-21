@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 export default function AddResignationUpdateForm({
 	resignationId,
 	resignationStatus,
+	setUpdates,
+	updates,
 }) {
 	const [update, setUpdate] = useState("");
 
@@ -51,6 +53,7 @@ export default function AddResignationUpdateForm({
 						throw new Error(data.error);
 					}
 
+					setUpdates([data, ...updates]);
 					setUpdate("");
 				}),
 			{

@@ -528,6 +528,16 @@ export const addResignationFeedback = async (resignationId, hrId, content) => {
 				resignationId: parseInt(resignationId),
 				creatorId: hrId,
 			},
+			select: {
+				content: true,
+				createdBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+					},
+				},
+				createdAt: true,
+			},
 		});
 
 		return resignationUpdate;
@@ -539,6 +549,7 @@ export const addResignationFeedback = async (resignationId, hrId, content) => {
 	}
 };
 export const loadResignationUpdates = async (resignationId) => {
+	console.log(resignationId);
 	try {
 		// find resignation
 		const resignation = await prisma.resignation.findUnique({
@@ -552,6 +563,9 @@ export const loadResignationUpdates = async (resignationId) => {
 		}
 
 		let resignationUpdates = await prisma.resignationResolution.findMany({
+			where: {
+				resignationId: parseInt(resignationId),
+			},
 			select: {
 				content: true,
 				createdBy: {

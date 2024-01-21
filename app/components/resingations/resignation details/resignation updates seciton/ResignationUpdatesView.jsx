@@ -3,8 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import FeedbackCard from "./FeedbackCard";
 
-export default function ResignationUpdatesView({ resignationId }) {
-	const [updates, setUpdates] = useState([]);
+export default function ResignationUpdatesView({
+	resignationId,
+	setUpdates,
+	updates,
+}) {
 	const [loading, setLoading] = useState(false);
 
 	const scrolledSection = useRef(null);
