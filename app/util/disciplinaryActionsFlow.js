@@ -1,5 +1,4 @@
-{
-	"actionsFlow": [
+export const actionsFlow= [
 		{
 			"actionCategory": "lateness",
 			"resetDuration": 90,
@@ -80,4 +79,4 @@
 			"actionsSuquence": ["HR Investigation"]
 		}
 	]
-}
+

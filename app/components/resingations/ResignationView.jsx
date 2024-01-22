@@ -38,7 +38,7 @@ export default function ResignationView({ resignation }) {
 						</h1>
 						<div className="py-2 px-4 h-full flex items-center justify-center">
 							<p className="break-words">
-								{S(resignation?.updates[0].content)
+								{S(resignation?.updates[0]?.content)
 									.truncate(100)
 									.lines()
 									.join("<br />")}

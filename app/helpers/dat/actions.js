@@ -1,6 +1,6 @@
 import prisma from "@/prisma/index";
 
-import { actionsFlow } from "@/util/disciplinaryActionsFlow.json";
+import { actionsFlow } from "@/util/disciplinaryActionsFlow";
 import moment from "moment";
 
 import _ from "lodash";
@@ -111,9 +111,9 @@ export const isPreviousActionPendingApproval = async (
 		const lastActionDate = moment(lastAction.incidentDate);
 		const differenceInDays = currentDate.diff(lastActionDate, "days");
 
-		const actionFlowEntry = actionsFlow.find(
-			(entry) => entry.actionCategory === actionCategory
-		);
+		const actionFlowEntry = _.find(actionsFlow, {
+			actionCategory: actionCategory,
+		});
 
 		if (!actionFlowEntry) {
 			throw new Error(

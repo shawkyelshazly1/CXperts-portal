@@ -7,7 +7,7 @@ export default function ViewEmployeeButton({ employeeId }) {
 		<button
 			onClick={() => {
 				window.open(
-					`http://localhost:3000/hr/employees?search=${employeeId}`,
+					`/hr/employees?search=${employeeId}`,
 					"_blank"
 				);
 			}}

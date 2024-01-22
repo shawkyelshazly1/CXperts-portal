@@ -241,7 +241,7 @@ export const exportToCsv = (data) => {
 			position: resignation.employee.position.title.split("_").join(" "),
 			reason: resignation.reason.split("_").join(" "),
 			lastWorkingDate: moment(resignation.lastWorkingDate).format("MM/DD/yyy"),
-			comment: resignation.updates[0].content,
+			comment: resignation.updates[0]?.content,
 			status: resignation.status,
 			hrAssigned: !resignation.hrAssigned
 				? ""
