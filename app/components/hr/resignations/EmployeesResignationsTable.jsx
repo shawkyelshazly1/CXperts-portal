@@ -173,7 +173,7 @@ export default function EmployeesResignationsTable() {
 								? "bg-amber-500"
 								: params.value === "processing"
 								? "bg-purple-500"
-								: params.value === "recalled"
+								: params.value === "recalled" || params.value === "retained"
 								? "bg-green-500"
 								: params.value === "completed"
 								? "bg-red-500"

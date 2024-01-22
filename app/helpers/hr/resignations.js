@@ -51,12 +51,24 @@ export const loadEmployeesResignations = async (
 				submissionDate: true,
 				lastWorkingDate: true,
 				status: true,
-				comment: true,
+
 				resolution: true,
 				hrAssigned: {
 					select: {
 						firstName: true,
 						lastName: true,
+					},
+				},
+				updates: {
+					select: {
+						content: true,
+						createdAt: true,
+						createdBy: {
+							select: {
+								firstName: true,
+								lastName: true,
+							},
+						},
 					},
 				},
 				reason: true,
@@ -157,12 +169,23 @@ export const exportEmployeesResignations = async (
 				submissionDate: true,
 				lastWorkingDate: true,
 				status: true,
-				comment: true,
 				resolution: true,
 				hrAssigned: {
 					select: {
 						firstName: true,
 						lastName: true,
+					},
+				},
+				updates: {
+					select: {
+						content: true,
+						createdAt: true,
+						createdBy: {
+							select: {
+								firstName: true,
+								lastName: true,
+							},
+						},
 					},
 				},
 				reason: true,
@@ -218,7 +241,7 @@ export const exportToCsv = (data) => {
 			position: resignation.employee.position.title.split("_").join(" "),
 			reason: resignation.reason.split("_").join(" "),
 			lastWorkingDate: moment(resignation.lastWorkingDate).format("MM/DD/yyy"),
-			comment: resignation.comment,
+			comment: resignation.updates[0].content,
 			status: resignation.status,
 			hrAssigned: !resignation.hrAssigned
 				? ""
@@ -258,12 +281,24 @@ export const loadEmployeesPendingResignations = async (skip, take) => {
 				submissionDate: true,
 				lastWorkingDate: true,
 				status: true,
-				comment: true,
+
 				resolution: true,
 				hrAssigned: {
 					select: {
 						firstName: true,
 						lastName: true,
+					},
+				},
+				updates: {
+					select: {
+						content: true,
+						createdAt: true,
+						createdBy: {
+							select: {
+								firstName: true,
+								lastName: true,
+							},
+						},
 					},
 				},
 				reason: true,
@@ -329,12 +364,24 @@ export const loadResignation = async (resignationId) => {
 				submissionDate: true,
 				lastWorkingDate: true,
 				status: true,
-				comment: true,
+
 				resolution: true,
 				hrAssigned: {
 					select: {
 						firstName: true,
 						lastName: true,
+					},
+				},
+				updates: {
+					select: {
+						content: true,
+						createdAt: true,
+						createdBy: {
+							select: {
+								firstName: true,
+								lastName: true,
+							},
+						},
 					},
 				},
 				reason: true,
@@ -362,6 +409,12 @@ export const claimResignation = async (resignationId, hrId) => {
 		}
 
 		if (resignation.status !== "pending") {
+			throw new Error("Resignation is no longer pending");
+		}
+
+		console.log(resignation.hrAssignedId === null);
+
+		if (resignation.hrAssignedId !== null) {
 			throw new Error("Resignation already assigned");
 		}
 
@@ -374,8 +427,6 @@ export const claimResignation = async (resignationId, hrId) => {
 				status: "processing",
 			},
 		});
-
-		console.log(claimedResignation);
 
 		return claimedResignation;
 	} catch (error) {
@@ -424,12 +475,24 @@ export const loadResignationFullDetails = async (resignationId) => {
 				submissionDate: true,
 				lastWorkingDate: true,
 				status: true,
-				comment: true,
+
 				resolution: true,
 				hrAssigned: {
 					select: {
 						firstName: true,
 						lastName: true,
+					},
+				},
+				updates: {
+					select: {
+						content: true,
+						createdAt: true,
+						createdBy: {
+							select: {
+								firstName: true,
+								lastName: true,
+							},
+						},
 					},
 				},
 				reason: true,
@@ -439,6 +502,140 @@ export const loadResignationFullDetails = async (resignationId) => {
 		return resignation;
 	} catch (error) {
 		console.error(error);
+		return { error: error.message };
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+
+// add feedback to resignation
+export const addResignationFeedback = async (resignationId, hrId, content) => {
+	try {
+		// find resignation
+		const resignation = await prisma.resignation.findUnique({
+			where: {
+				id: parseInt(resignationId),
+			},
+		});
+
+		if (!resignation) {
+			throw new Error("Resignation not found.");
+		}
+
+		let resignationUpdate = await prisma.resignationResolution.create({
+			data: {
+				content,
+				resignationId: parseInt(resignationId),
+				creatorId: hrId,
+			},
+			select: {
+				content: true,
+				createdBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+					},
+				},
+				createdAt: true,
+			},
+		});
+
+		return resignationUpdate;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+export const loadResignationUpdates = async (resignationId) => {
+	console.log(resignationId);
+	try {
+		// find resignation
+		const resignation = await prisma.resignation.findUnique({
+			where: {
+				id: parseInt(resignationId),
+			},
+		});
+
+		if (!resignation) {
+			throw new Error("Resignation not found.");
+		}
+
+		let resignationUpdates = await prisma.resignationResolution.findMany({
+			where: {
+				resignationId: parseInt(resignationId),
+			},
+			select: {
+				content: true,
+				createdBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+					},
+				},
+				createdAt: true,
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+		});
+
+		return resignationUpdates;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+
+export const closeResignation = async (hrId, data) => {
+	try {
+		// find resignation
+		const resignation = await prisma.resignation.findUnique({
+			where: {
+				id: parseInt(data.resignationId),
+			},
+		});
+
+		if (!resignation) {
+			throw new Error("Resignation not found.");
+		}
+
+		if (resignation.status !== "processing") {
+			throw new Error("Can't close resignation!");
+		}
+
+		let updatedResignation = await prisma.resignation.update({
+			where: {
+				id: parseInt(data.resignationId),
+			},
+			data: {
+				status: data.status,
+				resolution: data.resolution,
+			},
+		});
+
+		let update = await prisma.resignationResolution.create({
+			data: {
+				resignationId: parseInt(data.resignationId),
+				creatorId: hrId,
+				content: data.resolution,
+			},
+		});
+
+		let systemUpdate = await prisma.resignationResolution.create({
+			data: {
+				resignationId: resignation.id,
+				content: "System Generated: Employee Retained",
+			},
+		});
+
+		return updatedResignation;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
 	} finally {
 		await prisma.$disconnect();
 	}

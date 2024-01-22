@@ -7,8 +7,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = "postgresql://postgres:AdminP@$$w0rd@localhost:5432/CXperts_db?schema=public" // uses connection pooling
-  directUrl = "postgresql://postgres:AdminP@$$w0rd@localhost:5432/CXperts_db?schema=public" // uses a direct connection
+  url       = "postgresql://postgres:root@localhost:5432/CXperts_db?schema=public" // uses connection pooling
+  directUrl = "postgresql://postgres:root@localhost:5432/CXperts_db?schema=public" // uses a direct connection
 }
 
 model Department {
@@ -33,35 +33,39 @@ model LoginDetails {
 }
 
 model Employee {
-  id                   Int                @id @default(autoincrement())
-  email                String             @unique
-  firstName            String
-  employeeId           String             @unique
-  middleName           String?
-  lastName             String
-  hiringDate           DateTime           @default(now())
-  nationalId           String?
-  nationality          String?
-  resignationDate      DateTime?
-  phoneNumber          String?
-  birthDate            DateTime?
-  department           Department         @relation("DepartmentEmployees", fields: [departmentId], references: [id])
-  departmentId         Int
-  project              Department?        @relation("SubDepartmentEmployees", fields: [projectId], references: [id])
-  projectId            Int?
-  positionId           Int
-  position             Position           @relation(fields: [positionId], references: [id])
-  manager              Employee?          @relation("ManagerEmployees", fields: [managerId], references: [employeeId])
-  managerId            String?
-  subordinates         Employee[]         @relation("ManagerEmployees")
-  vacationBalance      Int                @default(21)
-  VacationRequest      VacationRequest[]
-  approvedRequests     VacationRequest[]  @relation("approvedByManager")
-  LoginDetails         LoginDetails?
-  documents            EmployeeDocuments?
-  accountStatus        String             @default("active")
-  resignations         Resignation[]
-  assignedResignations Resignation[]      @relation("assignedHr")
+  id                    Int                     @id @default(autoincrement())
+  email                 String                  @unique
+  firstName             String
+  employeeId            String                  @unique
+  middleName            String?
+  lastName              String
+  hiringDate            DateTime                @default(now())
+  nationalId            String?
+  nationality           String?
+  resignationDate       DateTime?
+  phoneNumber           String?
+  birthDate             DateTime?
+  department            Department              @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+  departmentId          Int
+  project               Department?             @relation("SubDepartmentEmployees", fields: [projectId], references: [id])
+  projectId             Int?
+  positionId            Int
+  position              Position                @relation(fields: [positionId], references: [id])
+  manager               Employee?               @relation("ManagerEmployees", fields: [managerId], references: [employeeId])
+  managerId             String?
+  subordinates          Employee[]              @relation("ManagerEmployees")
+  vacationBalance       Int                     @default(21)
+  VacationRequest       VacationRequest[]
+  approvedRequests      VacationRequest[]       @relation("approvedByManager")
+  LoginDetails          LoginDetails?
+  documents             EmployeeDocuments?
+  accountStatus         String                  @default("active")
+  resignations          Resignation[]
+  assignedResignations  Resignation[]           @relation("assignedHr")
+  ResignationResolution ResignationResolution[]
+  approvedActions       DisciplinaryActions[]   @relation("approvedActions")
+  submittedActions      DisciplinaryActions[]   @relation("submittedActions")
+  actionsRecieved       DisciplinaryActions[]   @relation("actionsReceieved")
 }
 
 model EmployeeDocuments {
@@ -103,17 +107,44 @@ model VacationRequest {
 }
 
 model Resignation {
-  id              Int       @id @default(autoincrement())
-  employee        Employee  @relation(fields: [employeeId], references: [employeeId])
+  id              Int                     @id @default(autoincrement())
+  employee        Employee                @relation(fields: [employeeId], references: [employeeId])
   employeeId      String
-  reason          String?
-  status          String?   @default("pending")
-  comment         String?
+  reason          String
+  status          String?                 @default("pending")
   resolution      String?
   lastWorkingDate DateTime
-  hrAssigned      Employee? @relation("assignedHr", fields: [hrAssignedId], references: [employeeId])
+  hrAssigned      Employee?               @relation("assignedHr", fields: [hrAssignedId], references: [employeeId])
   hrAssignedId    String?
-  submissionDate  DateTime  @default(now())
+  submissionDate  DateTime                @default(now())
+  updates         ResignationResolution[] @relation("updates")
+}
+
+model ResignationResolution {
+  id            Int          @id @default(autoincrement())
+  createdBy     Employee?    @relation(fields: [creatorId], references: [employeeId])
+  creatorId     String?
+  createdAt     DateTime     @default(now())
+  content       String
+  resignationId Int?
+  resignation   Resignation? @relation("updates", fields: [resignationId], references: [id])
+}
+
+model DisciplinaryActions {
+  id                 Int       @id @default(autoincrement())
+  submissionDate     DateTime  @default(now())
+  submittedBy        Employee  @relation("submittedActions", fields: [submittorId], references: [employeeId])
+  submittorId        String
+  actionCategory     String
+  incidentDate       DateTime  @default(now())
+  actionType         String
+  requiresApproval   Boolean   @default(false)
+  actionedEmployee   Employee  @relation("actionsReceieved", fields: [actionedEmployeeId], references: [employeeId])
+  actionedEmployeeId String
+  approvedBy         Employee? @relation("approvedActions", fields: [approverId], references: [employeeId])
+  approverId         String?
+  approvedOn         DateTime? @default(now())
+  approvalStatus     String?
 }
 
 enum VacationRequestStatus {

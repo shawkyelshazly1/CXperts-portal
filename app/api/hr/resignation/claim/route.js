@@ -24,6 +24,9 @@ export async function POST(req) {
 		token?.user?.employeeId
 	);
 
+	if (resignationClaimed.error) {
+		return new Response(resignationClaimed.error, { status: 422 });
+	}
 	if (resignationClaimed) {
 		return NextResponse.json(resignationClaimed);
 	} else {

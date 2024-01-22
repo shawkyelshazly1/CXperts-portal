@@ -11,7 +11,6 @@ export default async function Page({ searchParams }) {
 	let employees = await searchEmployees(searchParams);
 	let filters = await loadFilters();
 
-
 	return (
 		<div className="w-full flex container gap-4">
 			<div className="flex flex-col h-full w-full py-4 gap-4 container items-center">

@@ -103,9 +103,7 @@ export default function DepartmentAutoComplete({ handleFieldChange }) {
 						setSelectedSubDepartment(value);
 					}}
 					sx={{ width: 300 }}
-					renderInput={(params) => (
-						<TextField {...params} label="Project" />
-					)}
+					renderInput={(params) => <TextField {...params} label="Project" />}
 				/>
 			)}
 		</FormControl>

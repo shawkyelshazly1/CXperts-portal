@@ -21,6 +21,7 @@ export default function ResignationDetailsView({ resignation }) {
 			.join(" ")}`;
 	};
 
+	// post request to claim resignation as HR
 	const claimResignation = async () => {
 		toast.promise(
 			fetch("/api/hr/resignation/claim", {
@@ -30,7 +31,7 @@ export default function ResignationDetailsView({ resignation }) {
 				},
 				body: JSON.stringify({ resignationId: resignation?.id }),
 			})
-				.then((response) => {
+				.then(async (response) => {
 					if (!response.ok) {
 						throw new Error("Failed to claim resignation");
 					}
@@ -39,10 +40,11 @@ export default function ResignationDetailsView({ resignation }) {
 				.then(() => {
 					window.location.href = `/hr/resignations/view/${resignation.id}`;
 				}),
+
 			{
 				loading: "Claiming resignation...",
 				success: "Resignation successfully claimed! Redirecting...",
-				error: "Error claiming resignation",
+				error: "Error claiming resignation ",
 			}
 		);
 	};
@@ -64,7 +66,8 @@ export default function ResignationDetailsView({ resignation }) {
 							? "bg-amber-500"
 							: resignation.status === "processing"
 							? "bg-purple-500"
-							: resignation.status === "recalled"
+							: resignation.status === "recalled" ||
+							  resignation.status === "retained"
 							? "bg-green-500"
 							: resignation.status === "completed"
 							? "bg-red-500"
@@ -142,16 +145,18 @@ export default function ResignationDetailsView({ resignation }) {
 			<div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
 				<button
 					onClick={() => {
-						if (!resignation.hrAssigned) {
+						if (!resignation.hrAssigned && resignation.status === "pending") {
 							claimResignation(resignation.id);
 						} else {
-							window.location.href = `/hr/resignations/view/${resignation.id}`;
+							window.open(`/hr/resignations/view/${resignation.id}`, "_blank");
 						}
 					}}
 					type="button"
 					className="inline-flex justify-center w-full py-2 px-4 text-lg border border-transparent shadow-sm  font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 				>
-					{resignation.hrAssigned ? "View Full Details" : "Claim"}
+					{resignation.status === "pending" && !resignation.hrAssigned
+						? "Claim"
+						: "View Full Details"}
 				</button>
 			</div>
 		</div>

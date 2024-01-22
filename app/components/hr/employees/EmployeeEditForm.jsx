@@ -1,4 +1,5 @@
 "use client";
+import { FormControl } from "@mui/material";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import toast from "react-hot-toast";
@@ -8,6 +9,9 @@ import {
 	FaFileUpload,
 	FaUpload,
 } from "react-icons/fa";
+import DepartmentAutoComplete from "./DepartmentAutoComplete";
+import PositionAutoComplete from "./PositionAutoComplete";
+import ManagerAutoComplete from "./ManagerAutoComplete";
 
 export default function EmployeeEditForm({ employee, closeModal }) {
 	const [employeeInfo, setEmployeeInfo] = useState({});
@@ -22,6 +26,34 @@ export default function EmployeeEditForm({ employee, closeModal }) {
 		const employeeValue = isTextField(name)
 			? employee[name]?.toLowerCase().trim()
 			: employee[name];
+
+		if (newValue !== employeeValue && newValue !== "") {
+			setEmployeeInfo((prevState) => ({
+				...prevState,
+				[name]: newValue,
+			}));
+		} else {
+			setEmployeeInfo((prevState) => {
+				const newState = { ...prevState };
+				delete newState[name];
+				return newState;
+			});
+		}
+	};
+
+	const handleOrgTreeChange = (name, value) => {
+		const newValue = isTextField(name) ? value.toLowerCase().trim() : value;
+
+		const employeeValue =
+			name === "departmentId"
+				? employee.department.id
+				: name === "positionId"
+				? employee.position.id
+				: name === "managerId"
+				? employee.manager.employeeId
+				: name === "projectId"
+				? employee.project.id
+				: "";
 
 		if (newValue !== employeeValue && newValue !== "") {
 			setEmployeeInfo((prevState) => ({
@@ -90,12 +122,17 @@ export default function EmployeeEditForm({ employee, closeModal }) {
 			<h1 className="text-4xl font-semibold ">Edit Employee</h1>
 			<form onSubmit={handleSubmit}>
 				<div className="flex justify-end space-x-4">
-					<button
-						type="submit"
-						className="bg-green-500 hover:bg-green-600 text-2xl font-semibold text-white rounded px-4 py-2"
-					>
-						Update
-					</button>
+					{Object.keys(employeeInfo).length === 0 && files.length === 0 ? (
+						<></>
+					) : (
+						<button
+							type="submit"
+							className="bg-green-500 hover:bg-green-600 text-2xl font-semibold text-white rounded px-4 py-2"
+						>
+							Update
+						</button>
+					)}
+
 					<button
 						type="button"
 						className="bg-red-500 hover:bg-red-600 text-2xl font-semibold text-white rounded px-4 py-2"
@@ -219,6 +256,20 @@ export default function EmployeeEditForm({ employee, closeModal }) {
 							onChange={handleChange}
 						/>
 					</label>
+					<DepartmentAutoComplete handleFieldChange={handleOrgTreeChange} />
+					<FormControl className="flex flex-col  lg:flex-row gap-2">
+						<PositionAutoComplete
+							handleFieldChange={handleOrgTreeChange}
+							departmentId={employeeInfo.departmentId || employee.department.id}
+							required={employeeInfo.departmentId}
+						/>
+						<ManagerAutoComplete
+							handleFieldChange={handleOrgTreeChange}
+							departmentId={employeeInfo.departmentId || employee.department.id}
+							positionId={employeeInfo.positionId || employee.position.id}
+							required={employeeInfo.positionId}
+						/>
+					</FormControl>
 				</div>
 				<hr className="my-6" />
 				<h1 className="text-2xl font-semibold text-gray-400 mt-3">

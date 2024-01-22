@@ -48,14 +48,22 @@ export default withAuth(
 		) {
 			return NextResponse.redirect(new URL("/", req.url));
 		}
+
+		// protect dat pages
+		if (
+			req.nextUrl.pathname.startsWith("/dat") &&
+			token.user?.department.name !== "general_management" &&
+			token.user?.department.name !== "human_resources" &&
+			token.user?.department.name !== "operations" &&
+			token.user?.department.name !== "information_technology"
+		) {
+			return NextResponse.redirect(new URL("/", req.url));
+		}
 	},
 
 	{
 		pages: {
 			signIn: "/login",
 		},
-		
 	}
 );
-
-

@@ -15,15 +15,15 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { signOut, useSession } from "next-auth/react";
 import S from "underscore.string";
-import { FaUser } from "react-icons/fa";
 import Link from "next/link";
 import logoPic from "@/public/logo.png";
 import AdminMenu from "./AdminMenu";
 import HRMenu from "./HRMenu";
 import Image from "next/image";
 import WFMMenu from "./WFMMenu";
+import { includes } from "lodash";
 
-const pages = ["home", "vacation"];
+const pages = ["home", "vacation", "dat"];
 const settings = ["profile", "submit_resignation", "reset_password", "Logout"];
 
 export default function Header() {
@@ -91,15 +91,24 @@ export default function Header() {
 								display: { xs: "block", md: "none" },
 							}}
 						>
-							{pages.map((page) => (
-								<Link href={page === "home" ? "/" : `/${page}`} key={page}>
-									<MenuItem>
-										<Typography color="#000" textAlign="center">
-											{page}
-										</Typography>
-									</MenuItem>
-								</Link>
-							))}
+							{pages.map((page) => {
+								return ![
+									"information_technology",
+									"human_resources",
+									"operations",
+									"general_management",
+								].includes(data?.user?.department.name) && page === "dat" ? (
+									""
+								) : (
+									<Link href={page === "home" ? "/" : `/${page}`} key={page}>
+										<MenuItem>
+											<Typography className="text-primary" textAlign="center">
+												{page}
+											</Typography>
+										</MenuItem>
+									</Link>
+								);
+							})}
 							{/* departments menus */}
 							<AdminMenu />
 							<HRMenu />
@@ -122,19 +131,28 @@ export default function Header() {
 							display: { xs: "none", md: "flex", marginLeft: "50px" },
 						}}
 					>
-						{pages.map((page) => (
-							<Link href={page === "home" ? "/" : `/${page}`} key={page}>
-								<Button
-									sx={{
-										my: 2,
-										display: "block",
-										fontWeight: "700",
-									}}
-								>
-									{page}
-								</Button>
-							</Link>
-						))}
+						{pages.map((page) => {
+							return ![
+								"information_technology",
+								"human_resources",
+								"operations",
+								"general_management",
+							].includes(data?.user?.department.name) && page === "dat" ? (
+								""
+							) : (
+								<Link href={page === "home" ? "/" : `/${page}`} key={page}>
+									<Button
+										sx={{
+											my: 2,
+											display: "block",
+											fontWeight: "700",
+										}}
+									>
+										{page}
+									</Button>
+								</Link>
+							);
+						})}
 						{/* departments menus */}
 						<AdminMenu />
 						<HRMenu />
