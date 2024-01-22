@@ -4,6 +4,7 @@ import { actionsFlow } from "@/util/disciplinaryActionsFlow.json";
 import moment from "moment";
 
 import _ from "lodash";
+import exportFromJSON from "export-from-json";
 // get next action applicable
 export const getNextApplicableAction = async (
 	actionCategory,
@@ -149,7 +150,8 @@ export const applyAction = async (
 	employeeId,
 	incidentDate,
 	actionCategory,
-	submittorId
+	submittorId,
+	comment
 ) => {
 	try {
 		const actionType = await getNextApplicableAction(
@@ -171,6 +173,7 @@ export const applyAction = async (
 		const action = await prisma.disciplinaryActions.create({
 			data: {
 				actionCategory: actionCategory,
+				comment: comment.trim(),
 				actionType: actionType,
 				actionedEmployeeId: employeeId,
 				incidentDate: new Date(incidentDate),
@@ -360,8 +363,37 @@ export const getEmployeeActions = async (employeeId) => {
 			orderBy: {
 				incidentDate: "desc",
 			},
-			include: {
+			select: {
 				actionCategory: true,
+				actionedEmployee: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				submittedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvalStatus: true,
+				requiresApproval: true,
+				incidentDate: true,
+				actionType: true,
+				approvedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvedOn: true,
+				submissionDate: true,
+				id: true,
+				comment: true,
 			},
 		});
 
@@ -408,11 +440,13 @@ export const getSupervisorPendingActions = async (employeeId) => {
 			throw new Error("available only for supervisors");
 		}
 
-		let project = employee.project ? employee.project.id : "";
+		let project = employee.project ? employee.project.id : undefined;
 
 		let actions = await prisma.disciplinaryActions.findMany({
 			where: {
-				approvalStatus: { notIn: ["approved", "rejected"] },
+				approvalStatus: {
+					equals: null,
+				},
 				actionedEmployee: {
 					projectId: project ? project : undefined,
 				},
@@ -421,15 +455,41 @@ export const getSupervisorPendingActions = async (employeeId) => {
 			orderBy: {
 				incidentDate: "desc",
 			},
-			include: {
+			select: {
 				actionCategory: true,
 				actionedEmployee: {
-					include: {
-						project: true,
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
 					},
 				},
+				submittedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvalStatus: true,
+				requiresApproval: true,
+				incidentDate: true,
+				actionType: true,
+				approvedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvedOn: true,
+				submissionDate: true,
+				id: true,
+				comment: true,
 			},
 		});
+
+		console.log(actions);
 
 		return actions;
 	} catch (error) {
@@ -479,13 +539,38 @@ export const getOperationsManagerPendingActions = async (employeeId) => {
 			orderBy: {
 				incidentDate: "desc",
 			},
-			include: {
+
+			select: {
 				actionCategory: true,
 				actionedEmployee: {
-					include: {
-						project: true,
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
 					},
 				},
+				submittedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvalStatus: true,
+				requiresApproval: true,
+				incidentDate: true,
+				actionType: true,
+				approvedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvedOn: true,
+				submissionDate: true,
+				id: true,
+				comment: true,
 			},
 		});
 
@@ -532,10 +617,86 @@ export const getHrPendingActions = async (employeeId) => {
 			orderBy: {
 				incidentDate: "desc",
 			},
-			include: {
+			select: {
 				actionCategory: true,
+				actionedEmployee: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				submittedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvalStatus: true,
+				requiresApproval: true,
+				incidentDate: true,
+				actionType: true,
+				approvedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvedOn: true,
+				submissionDate: true,
+				id: true,
+				comment: true,
 			},
 		});
+
+		return actions;
+	} catch (error) {
+		console.error(error);
+		return { error: error.message };
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+
+// get pending approval actions
+export const getPendingActions = async (employeeId) => {
+	try {
+		let employee = await prisma.employee.findFirst({
+			where: { employeeId: employeeId },
+			select: {
+				department: {
+					select: {
+						name: true,
+					},
+				},
+				position: {
+					select: {
+						title: true,
+					},
+				},
+			},
+		});
+
+		if (!employee) {
+			throw new Error("Employee not found");
+		}
+
+		let actions;
+		switch (employee.department.name) {
+			case "human_resources":
+				actions = await getHrPendingActions(employeeId);
+
+				break;
+			case "operations":
+				if (employee.position.title === "operations_manager") {
+					actions = await getOperationsManagerPendingActions(employeeId);
+				} else if (employee.position.title === "supervisor") {
+					actions = await getSupervisorPendingActions(employeeId);
+				}
+				break;
+		}
 
 		return actions;
 	} catch (error) {
@@ -556,13 +717,40 @@ export const loadActions = async (from, to) => {
 					lte: to ? new Date(to) : undefined,
 				},
 			},
-			include: {
+			orderBy: {
+				submissionDate: "desc",
+			},
+			select: {
 				actionCategory: true,
 				actionedEmployee: {
-					include: {
-						project: true,
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
 					},
 				},
+				submittedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvalStatus: true,
+				requiresApproval: true,
+				incidentDate: true,
+				actionType: true,
+				approvedBy: {
+					select: {
+						firstName: true,
+						lastName: true,
+						employeeId: true,
+					},
+				},
+				approvedOn: true,
+				submissionDate: true,
+				id: true,
+				comment: true,
 			},
 		});
 
@@ -573,4 +761,32 @@ export const loadActions = async (from, to) => {
 	} finally {
 		await prisma.$disconnect();
 	}
+};
+
+// export data to csv
+export const exportToCsv = (data) => {
+	let fileName = "DATHistory";
+	let exportType = exportFromJSON.types.csv;
+	data = data.map((action) => {
+		return {
+			actionId: action.id,
+			submissionDate: moment(action.submissionDate).format("MM/DD/yyy"),
+			employeeId: action.actionedEmployee.employeeId,
+			employee: `${action.actionedEmployee?.firstName} ${action.actionedEmployee?.lastName}`,
+			incidentDate: moment(action.incidentDate).format("MM/DD/yyy"),
+			actionCategory: action.actionCategory.split("_").join(" "),
+			actionType: action.actionType,
+			submittedBy: `${action.submittedBy?.firstName} ${action.submittedBy?.lastName}`,
+			comment: action.comment,
+			requiresApproval: action.requiresApproval,
+			approvalStatus: action.approvalStatus || "",
+			approvedBy: action.approvedBy?.firstName
+				? `${action.approvedBy?.firstName} ${action.approvedBy?.lastName}`
+				: "",
+			approvedOn: action.approvedOn
+				? moment(action.approvedOn).format("MM/DD/yyy")
+				: "",
+		};
+	});
+	exportFromJSON({ data, fileName, exportType });
 };

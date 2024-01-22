@@ -68,6 +68,12 @@ export default function ActionsForm({ employee }) {
 			return false;
 		}
 
+		// validate is date isn't greater than today
+		if (new Date(formData.incidentDate) > new Date()) {
+			toast.error("Incident date cannot be greater than today.");
+			return false;
+		}
+
 		return true;
 	};
 
@@ -182,6 +188,9 @@ export default function ActionsForm({ employee }) {
 				value={formData.incidentDate}
 				name="incidentDate"
 				className="w-full"
+				inputProps={{
+					max: new Date().toISOString().split("T")[0],
+				}}
 			/>
 
 			{loading ? (

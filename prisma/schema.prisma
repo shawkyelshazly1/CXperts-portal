@@ -143,8 +143,9 @@ model DisciplinaryActions {
   actionedEmployeeId String
   approvedBy         Employee? @relation("approvedActions", fields: [approverId], references: [employeeId])
   approverId         String?
-  approvedOn         DateTime? @default(now())
+  approvedOn         DateTime?
   approvalStatus     String?
+  comment            String?
 }
 
 enum VacationRequestStatus {

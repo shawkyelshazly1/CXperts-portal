@@ -1,8 +1,4 @@
-import {
-	applyAction,
-	getNextApplicableAction,
-	isPreviousActionPendingApproval,
-} from "@/helpers/dat/actions";
+import { approveAction, getPendingActions } from "@/helpers/dat/actions";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
@@ -21,23 +17,19 @@ export async function POST(req) {
 		return new Response("Not Authorized", { status: 401 });
 	}
 
-	const body = await req.json();
+	let body = await req.json();
 
-	// apply action
-	let action = await applyAction(
-		body.employeeId,
-		body.incidentDate,
-		body.actionCategory,
-		token.user?.employeeId,
-		body.comment
+	let approvedAction = await approveAction(
+		parseInt(body.actionId),
+		token.user?.employeeId
 	);
 
-	if (action.error) {
-		return NextResponse.json({ error: action.error }, { status: 400 });
+	if (approvedAction?.error) {
+		return new Response(approvedAction?.error?.message, { status: 422 });
 	}
 
-	if (action) {
-		return NextResponse.json(action);
+	if (approvedAction) {
+		return NextResponse.json(approvedAction);
 	} else {
 		return new Response("Something went wrong!", { status: 422 });
 	}
