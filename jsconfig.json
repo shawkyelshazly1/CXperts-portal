@@ -7,6 +7,7 @@
       "@/public/*":["public/*"],
       "@/api/*":["app/api/*"],
       "@/helpers/*":["app/helpers/*"],
+      "@/util/*":["app/util/*"],
     }
   }
 }

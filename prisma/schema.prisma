@@ -63,6 +63,9 @@ model Employee {
   resignations          Resignation[]
   assignedResignations  Resignation[]           @relation("assignedHr")
   ResignationResolution ResignationResolution[]
+  approvedActions       DisciplinaryActions[]   @relation("approvedActions")
+  submittedActions      DisciplinaryActions[]   @relation("submittedActions")
+  actionsRecieved       DisciplinaryActions[]   @relation("actionsReceieved")
 }
 
 model EmployeeDocuments {
@@ -125,6 +128,23 @@ model ResignationResolution {
   content       String
   resignationId Int?
   resignation   Resignation? @relation("updates", fields: [resignationId], references: [id])
+}
+
+model DisciplinaryActions {
+  id                 Int       @id @default(autoincrement())
+  submissionDate     DateTime  @default(now())
+  submittedBy        Employee  @relation("submittedActions", fields: [submittorId], references: [employeeId])
+  submittorId        String
+  actionCategory     String
+  incidentDate       DateTime  @default(now())
+  actionType         String
+  requiresApproval   Boolean   @default(false)
+  actionedEmployee   Employee  @relation("actionsReceieved", fields: [actionedEmployeeId], references: [employeeId])
+  actionedEmployeeId String
+  approvedBy         Employee? @relation("approvedActions", fields: [approverId], references: [employeeId])
+  approverId         String?
+  approvedOn         DateTime? @default(now())
+  approvalStatus     String?
 }
 
 enum VacationRequestStatus {
