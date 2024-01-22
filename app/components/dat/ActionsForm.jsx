@@ -101,6 +101,10 @@ export default function ActionsForm({ employee }) {
 				return;
 			} else {
 				toast.success("Action submitted successfully!");
+				const ele = autocompleteRef.current.getElementsByClassName(
+					"MuiAutocomplete-clearIndicator"
+				)[0];
+				if (ele) ele.click();
 				setFormData({
 					actionCategory: "",
 					incidentDate: "",
@@ -131,6 +135,7 @@ export default function ActionsForm({ employee }) {
 						}),
 					});
 					const data = await response.json();
+
 					setFormData((prevFormData) => ({
 						...prevFormData,
 						nextAction: data.nextAction,
