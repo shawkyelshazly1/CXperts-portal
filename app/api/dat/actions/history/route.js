@@ -1,8 +1,4 @@
-import {
-	applyAction,
-	getNextApplicableAction,
-	isPreviousActionPendingApproval,
-} from "@/helpers/dat/actions";
+import { getEmployeeActions } from "@/helpers/dat/actions";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
@@ -23,21 +19,14 @@ export async function POST(req) {
 
 	const body = await req.json();
 
-	// apply action
-	let action = await applyAction(
-		body.employeeId,
-		body.incidentDate,
-		body.actionCategory,
-		token.user?.employeeId,
-		body.comment
-	);
+	let actions = await getEmployeeActions(body.employeeId);
 
-	if (action.error) {
-		return NextResponse.json({ error: action.error }, { status: 400 });
+	if (actions.error) {
+		return new Response(actions?.error?.message, { status: 422 });
 	}
 
-	if (action) {
-		return NextResponse.json(action);
+	if (actions) {
+		return NextResponse.json(actions);
 	} else {
 		return new Response("Something went wrong!", { status: 422 });
 	}
