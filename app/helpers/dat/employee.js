@@ -1,17 +1,27 @@
 import prisma from "@/prisma/index";
 
+import _ from "lodash";
+import { object } from "yup";
+
 // load employee information using employeeId and if not representative then return error
 export const loadEmployee = async (searchParams) => {
+	if (Object.keys(searchParams).length === 0) {
+		return;
+	}
 	try {
-		if (searchParams?.employeeId === undefined) {
-			return;
-		}
-
-		let employee = await prisma.employee.findUnique({
+		let employee = await prisma.employee.findFirst({
 			where: { employeeId: searchParams?.employeeId?.toLowerCase() },
-			include: {
-				position: true,
-				project: true,
+			select: {
+				position: {
+					select: {
+						title: true,
+					},
+				},
+				project: {
+					select: {
+						name: true,
+					},
+				},
 				manager: {
 					select: {
 						firstName: true,
@@ -25,7 +35,7 @@ export const loadEmployee = async (searchParams) => {
 			throw new Error("Employee not found");
 		}
 
-		if (employee.position.title !== "representative") {
+		if (employee?.position?.title !== "representative") {
 			throw new Error("Employee is not a representative");
 		}
 
