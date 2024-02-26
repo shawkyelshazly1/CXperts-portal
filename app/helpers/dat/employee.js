@@ -4,14 +4,14 @@ import _ from "lodash";
 import { object } from "yup";
 
 // load employee information using employeeId and if not representative then return error
-export const loadEmployee = async (searchParams) => {
-	if (Object.keys(searchParams).length === 0) {
+export const loadEmployee = async (employeeId) => {
+	if (employeeId.length === 0) {
 		return;
 	}
 	try {
 		let employee = await prisma.employee.findFirst({
-			where: { employeeId: searchParams?.employeeId?.toLowerCase() },
-			select: {
+			where: { employeeId: employeeId.toLowerCase() },
+			include: {
 				position: {
 					select: {
 						title: true,
