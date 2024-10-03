@@ -14,6 +14,8 @@ export async function GET(req) {
 		parseInt(req.nextUrl.searchParams.get(["take"]))
 	);
 
+	console.log(departments)
+
 	if (departments) {
 		return NextResponse.json(departments);
 	} else {

@@ -241,14 +241,15 @@ export const approveAction = async (actionId, approverId) => {
 			throw new Error(`Only HR can approve ${action.actionType}`);
 		} else if (
 			action.actionType === "1 Day" &&
-			employee.position.title !== "supervisor" &&
-			employee.position.title !== "operations_manager"
+			(employee.position.title !== "supervisor" &&
+			employee.position.title !== "operations_manager")
 		) {
 			throw new Error(
 				`Only supervisor or operations manager can approve 1 Day action`
 			);
 		} else if (
 			["2 Days", "3 Days"].includes(action.actionType) &&
+			employee.position.title !== "supervisor" &&
 			employee.position.title !== "operations_manager"
 		) {
 			throw new Error(
@@ -327,6 +328,7 @@ export const rejectAction = async (actionId, approverId) => {
 			);
 		} else if (
 			["2 Days", "3 Days"].includes(action.actionType) &&
+			employee.position.title !== "supervisor" &&
 			employee.position.title !== "operations_manager"
 		) {
 			throw new Error(
@@ -522,8 +524,8 @@ export const getOperationsManagerPendingActions = async (employeeId) => {
 			},
 		});
 
-		if (employee.position.title !== "operations_manager") {
-			throw new Error("available only for operations manager");
+		if (employee.position.title !== "operations_manager" && employee.position.title !== "supervisor") {
+			throw new Error("available only for operations manager or supervisor");
 		}
 
 		let project = employee.project ? employee.project.id : "";
@@ -690,7 +692,7 @@ export const getPendingActions = async (employeeId) => {
 
 				break;
 			case "operations":
-				if (employee.position.title === "operations_manager") {
+				if (employee.position.title === "operations_manager" || employee.position.title === "supervisor") {
 					actions = await getOperationsManagerPendingActions(employeeId);
 				} else if (employee.position.title === "supervisor") {
 					actions = await getSupervisorPendingActions(employeeId);

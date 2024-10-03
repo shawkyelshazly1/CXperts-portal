@@ -91,7 +91,7 @@ export const loadUser = async (userId) => {
 export const loadDepartments = async () => {
 	try {
 		let departments = await prisma.department.findMany({
-			where: { parentId: null },
+			
 			select: {
 				id: true,
 				name: true,
